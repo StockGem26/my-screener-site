@@ -29,31 +29,75 @@ def write_site(df: pd.DataFrame) -> None:
     else:
         table_html = df.head(200).to_html(index=False, escape=True)
 
-    html = f"""<!doctype html>
+html = f"""<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Stage 2 Screener</title>
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
   <style>
-    body {{ font-family: Arial, sans-serif; margin: 24px; }}
-    .muted {{ color: #666; }}
-    table {{ border-collapse: collapse; width: 100%; margin-top: 16px; }}
-    th, td {{ border: 1px solid #ddd; padding: 8px; font-size: 14px; }}
-    th {{ background: #f5f5f5; text-align: left; }}
+    body {{
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #0f172a;
+      color: #e2e8f0;
+    }}
+
+    h1 {{
+      margin-bottom: 5px;
+    }}
+
+    .muted {{
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }}
+
+    table.dataTable {{
+      background-color: #1e293b;
+      color: #e2e8f0;
+    }}
+
+    table.dataTable thead {{
+      background-color: #334155;
+    }}
+
+    a {{
+      color: #38bdf8;
+    }}
   </style>
 </head>
 <body>
-  <h1>Stage 2 Screener</h1>
-  <p class="muted">Last updated: <b>{generated_at}</b></p>
 
-  <p><a href="stage2_candidates.csv">Download stage2_candidates.csv</a></p>
+  <h1>📊 Stage 2 Screener</h1>
+  <div class="muted">Last updated: <b>{generated_at}</b></div>
 
-  <h2>Top 200 Results</h2>
-  {table_html}
+  <p><a href="stage2_candidates.csv">Download CSV</a></p>
+
+  {table_html.replace('<table border="1" class="dataframe">', '<table id="screenerTable" class="display">')}
+
+  <script>
+    $(document).ready(function() {{
+        $('#screenerTable').DataTable({{
+            pageLength: 25,
+            order: []
+        }});
+    }});
+  </script>
+
 </body>
 </html>
 """
+
     (out_dir / "index.html").write_text(html, encoding="utf-8")
 
 
