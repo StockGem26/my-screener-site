@@ -27,10 +27,15 @@ def write_site(df: pd.DataFrame) -> None:
     if df.empty:
         table_html = "<p>No Stage 2 matches found today.</p>"
     else:
+        # Put symbol first
+        if "symbol" in df.columns:
+            cols = ["symbol"] + [c for c in df.columns if c != "symbol"]
+            df = df[cols]
+
         # Build table HTML
         table_html = df.head(500).to_html(index=False, escape=True)
 
-        # Ensure the FIRST <table ...> has id/class for DataTables (robust)
+        # Ensure the FIRST <table ...> has id/class for DataTables
         table_html = table_html.replace(
             "<table",
             '<table id="screenerTable" class="display"',
