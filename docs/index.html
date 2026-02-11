@@ -4,22 +4,75 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Stage 2 Screener</title>
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; }
-    .muted { color: #666; }
-    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
-    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; }
-    th { background: #f5f5f5; text-align: left; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #0f172a;
+      color: #e2e8f0;
+    }
+
+    h1 {
+      margin-bottom: 6px;
+    }
+
+    .muted {
+      color: #94a3b8;
+      margin-bottom: 18px;
+    }
+
+    a {
+      color: #38bdf8;
+    }
+
+    /* Make DataTables match the dark theme */
+    table.dataTable {
+      background-color: #1e293b;
+      color: #e2e8f0;
+    }
+
+    table.dataTable thead {
+      background-color: #334155;
+    }
+
+    /* Fix DataTables text colors */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {
+      color: #e2e8f0 !important;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {
+      background: #0b1220;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px 6px;
+      outline: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Stage 2 Screener</h1>
-  <p class="muted">Last updated: <b>2026-02-11 03:42 UTC</b></p>
+
+  <h1>📊 Stage 2 Screener</h1>
+  <div class="muted">Last updated: <b>2026-02-11 19:57 UTC</b></div>
 
   <p><a href="stage2_candidates.csv">Download stage2_candidates.csv</a></p>
 
-  <h2>Top 200 Results</h2>
-  <table border="1" class="dataframe">
+  <table id="screenerTable" class="display" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>close</th>
@@ -37,643 +90,390 @@
   </thead>
   <tbody>
     <tr>
-      <td>62.119999</td>
-      <td>55.064800</td>
-      <td>47.593533</td>
-      <td>44.814000</td>
-      <td>62.099998</td>
-      <td>1252000.0</td>
-      <td>630190.0</td>
-      <td>0.122227</td>
-      <td>12.812540</td>
-      <td>ATMU</td>
-      <td>0.032207</td>
+      <td>24.399900</td>
+      <td>24.146258</td>
+      <td>23.999039</td>
+      <td>23.840345</td>
+      <td>24.360001</td>
+      <td>1422.0</td>
+      <td>672.44</td>
+      <td>0.005199</td>
+      <td>1.050441</td>
+      <td>OXSQG</td>
+      <td>0.163792</td>
     </tr>
     <tr>
-      <td>742.369995</td>
-      <td>622.332598</td>
-      <td>523.626199</td>
-      <td>480.652999</td>
-      <td>742.119995</td>
-      <td>4007000.0</td>
-      <td>2662380.0</td>
-      <td>1.830189</td>
-      <td>19.288303</td>
-      <td>CAT</td>
-      <td>0.033687</td>
+      <td>23.299200</td>
+      <td>22.895884</td>
+      <td>22.863341</td>
+      <td>22.558816</td>
+      <td>23.230000</td>
+      <td>23513.0</td>
+      <td>14908.26</td>
+      <td>0.006395</td>
+      <td>1.761522</td>
+      <td>GPJA</td>
+      <td>0.297893</td>
     </tr>
     <tr>
-      <td>246.449997</td>
-      <td>223.211000</td>
-      <td>206.277733</td>
-      <td>204.957600</td>
-      <td>246.320007</td>
-      <td>1514600.0</td>
-      <td>753414.0</td>
-      <td>0.310423</td>
-      <td>10.411224</td>
-      <td>WAB</td>
-      <td>0.052773</td>
+      <td>23.469999</td>
+      <td>22.931320</td>
+      <td>22.429220</td>
+      <td>22.269495</td>
+      <td>23.350000</td>
+      <td>19507.0</td>
+      <td>8554.14</td>
+      <td>0.012186</td>
+      <td>2.349099</td>
+      <td>ADAML</td>
+      <td>0.513914</td>
     </tr>
     <tr>
-      <td>75.379997</td>
-      <td>65.166000</td>
-      <td>55.816333</td>
-      <td>51.877200</td>
-      <td>75.320000</td>
-      <td>105700.0</td>
-      <td>72330.0</td>
-      <td>0.137597</td>
-      <td>15.673813</td>
-      <td>NWPX</td>
-      <td>0.079657</td>
+      <td>31.719999</td>
+      <td>29.710400</td>
+      <td>28.526333</td>
+      <td>28.208400</td>
+      <td>31.500000</td>
+      <td>797.0</td>
+      <td>491.94</td>
+      <td>0.020813</td>
+      <td>6.763959</td>
+      <td>SIM</td>
+      <td>0.698411</td>
     </tr>
     <tr>
-      <td>21.490000</td>
-      <td>19.324400</td>
-      <td>17.674933</td>
-      <td>16.636350</td>
-      <td>21.469999</td>
-      <td>604400.0</td>
-      <td>393760.0</td>
-      <td>0.039455</td>
-      <td>11.206557</td>
-      <td>GNK</td>
-      <td>0.093155</td>
-    </tr>
-    <tr>
-      <td>22.930000</td>
-      <td>19.086400</td>
-      <td>16.429733</td>
-      <td>16.271200</td>
-      <td>22.900000</td>
-      <td>618800.0</td>
-      <td>327008.0</td>
-      <td>0.035728</td>
-      <td>20.137900</td>
-      <td>CMCO</td>
-      <td>0.131007</td>
-    </tr>
-    <tr>
-      <td>6.180000</td>
-      <td>5.898400</td>
-      <td>5.803267</td>
-      <td>5.786850</td>
-      <td>6.170000</td>
-      <td>482400.0</td>
-      <td>323440.0</td>
-      <td>0.003541</td>
-      <td>4.774173</td>
-      <td>BGY</td>
-      <td>0.162071</td>
-    </tr>
-    <tr>
-      <td>44.730000</td>
-      <td>42.659800</td>
-      <td>42.382467</td>
-      <td>41.630550</td>
-      <td>44.650002</td>
-      <td>6150900.0</td>
-      <td>3660930.0</td>
-      <td>0.026484</td>
-      <td>4.852811</td>
-      <td>NI</td>
-      <td>0.179167</td>
-    </tr>
-    <tr>
-      <td>104.959999</td>
-      <td>98.217600</td>
-      <td>93.826067</td>
-      <td>91.655950</td>
-      <td>104.739998</td>
-      <td>111800.0</td>
-      <td>74266.0</td>
-      <td>0.140182</td>
-      <td>6.864757</td>
-      <td>DAC</td>
-      <td>0.210045</td>
-    </tr>
-    <tr>
-      <td>44.220001</td>
-      <td>40.271800</td>
-      <td>36.203800</td>
-      <td>34.471650</td>
-      <td>44.119999</td>
-      <td>336200.0</td>
-      <td>195236.0</td>
-      <td>0.077944</td>
-      <td>9.803885</td>
-      <td>TX</td>
-      <td>0.226660</td>
-    </tr>
-    <tr>
-      <td>108.389999</td>
-      <td>98.904000</td>
-      <td>96.187467</td>
-      <td>94.082150</td>
-      <td>107.940002</td>
-      <td>532900.0</td>
-      <td>294416.0</td>
-      <td>0.062161</td>
-      <td>9.591118</td>
-      <td>FELE</td>
-      <td>0.416895</td>
-    </tr>
-    <tr>
-      <td>29.240000</td>
-      <td>24.315000</td>
-      <td>22.998267</td>
-      <td>22.928700</td>
-      <td>29.110001</td>
-      <td>242100.0</td>
-      <td>154802.0</td>
-      <td>0.034742</td>
-      <td>20.254986</td>
-      <td>CVLG</td>
-      <td>0.446579</td>
-    </tr>
-    <tr>
-      <td>27.910000</td>
-      <td>26.879200</td>
-      <td>25.903400</td>
-      <td>25.506300</td>
-      <td>27.780001</td>
-      <td>24000.0</td>
-      <td>9810.0</td>
-      <td>0.017644</td>
-      <td>3.834935</td>
-      <td>IROQ</td>
-      <td>0.467960</td>
-    </tr>
-    <tr>
-      <td>125.610001</td>
-      <td>102.750400</td>
-      <td>97.498267</td>
-      <td>95.117250</td>
-      <td>124.949997</td>
-      <td>506500.0</td>
-      <td>354246.0</td>
-      <td>0.175383</td>
-      <td>22.247699</td>
-      <td>SNEX</td>
-      <td>0.528214</td>
-    </tr>
-    <tr>
+      <td>39.805000</td>
+      <td>33.288700</td>
+      <td>31.334633</td>
+      <td>30.308475</td>
       <td>39.500000</td>
-      <td>33.124800</td>
-      <td>31.271067</td>
-      <td>30.238800</td>
-      <td>39.290001</td>
-      <td>1043500.0</td>
-      <td>479700.0</td>
-      <td>0.048792</td>
-      <td>19.246004</td>
+      <td>1294420.0</td>
+      <td>502956.40</td>
+      <td>0.051410</td>
+      <td>19.575113</td>
       <td>STEL</td>
-      <td>0.534485</td>
+      <td>0.772153</td>
     </tr>
     <tr>
-      <td>15.760000</td>
-      <td>15.319000</td>
-      <td>14.843667</td>
-      <td>14.647600</td>
-      <td>15.670000</td>
-      <td>158000.0</td>
-      <td>87012.0</td>
-      <td>0.009123</td>
-      <td>2.878780</td>
-      <td>DIAX</td>
-      <td>0.574347</td>
-    </tr>
-    <tr>
-      <td>8.190000</td>
-      <td>8.029800</td>
-      <td>7.969200</td>
-      <td>7.849100</td>
-      <td>8.140000</td>
-      <td>73200.0</td>
-      <td>50368.0</td>
-      <td>0.004489</td>
-      <td>1.995063</td>
-      <td>FT</td>
-      <td>0.614241</td>
-    </tr>
-    <tr>
-      <td>38.860001</td>
-      <td>36.213800</td>
-      <td>32.215533</td>
-      <td>31.286600</td>
-      <td>38.610001</td>
-      <td>25900.0</td>
-      <td>15838.0</td>
-      <td>0.052588</td>
-      <td>7.307161</td>
-      <td>PEBK</td>
-      <td>0.647501</td>
-    </tr>
-    <tr>
-      <td>14.040000</td>
-      <td>13.020400</td>
-      <td>12.869133</td>
-      <td>12.715100</td>
-      <td>13.940000</td>
-      <td>140200.0</td>
-      <td>85810.0</td>
-      <td>0.008866</td>
-      <td>7.830788</td>
-      <td>DPG</td>
-      <td>0.717363</td>
-    </tr>
-    <tr>
-      <td>7.080000</td>
-      <td>6.521800</td>
-      <td>6.237200</td>
-      <td>6.080350</td>
-      <td>7.020000</td>
-      <td>160500.0</td>
-      <td>81020.0</td>
-      <td>0.009714</td>
-      <td>8.558986</td>
-      <td>IHD</td>
-      <td>0.854700</td>
-    </tr>
-    <tr>
-      <td>11.990000</td>
-      <td>11.022600</td>
-      <td>10.382600</td>
-      <td>9.987750</td>
-      <td>11.880000</td>
-      <td>205600.0</td>
-      <td>124072.0</td>
-      <td>0.018512</td>
-      <td>8.776511</td>
-      <td>RMT</td>
-      <td>0.925923</td>
-    </tr>
-    <tr>
-      <td>10.780000</td>
-      <td>9.746580</td>
-      <td>9.079173</td>
-      <td>8.823405</td>
-      <td>10.680000</td>
-      <td>308800.0</td>
-      <td>128300.0</td>
-      <td>0.017362</td>
-      <td>10.602896</td>
-      <td>ELPC</td>
-      <td>0.936324</td>
-    </tr>
-    <tr>
-      <td>21.219999</td>
-      <td>18.031800</td>
-      <td>16.943800</td>
-      <td>16.072500</td>
-      <td>21.010000</td>
-      <td>18703400.0</td>
-      <td>12014106.0</td>
-      <td>0.037418</td>
-      <td>17.680982</td>
-      <td>CVE</td>
-      <td>0.999520</td>
-    </tr>
-    <tr>
-      <td>6.930000</td>
-      <td>5.884000</td>
-      <td>5.734333</td>
-      <td>5.262125</td>
-      <td>6.860000</td>
-      <td>1845600.0</td>
-      <td>1043942.0</td>
-      <td>0.017196</td>
-      <td>17.777020</td>
-      <td>SLDB</td>
-      <td>1.020404</td>
-    </tr>
-    <tr>
-      <td>12.070000</td>
-      <td>9.809400</td>
-      <td>9.217600</td>
-      <td>8.451950</td>
-      <td>11.940000</td>
-      <td>6706100.0</td>
-      <td>4434036.0</td>
-      <td>0.024023</td>
-      <td>23.045240</td>
-      <td>VNET</td>
-      <td>1.088778</td>
-    </tr>
-    <tr>
-      <td>8.200000</td>
-      <td>7.618800</td>
-      <td>7.463667</td>
-      <td>7.298850</td>
-      <td>8.110000</td>
-      <td>312700.0</td>
-      <td>176510.0</td>
-      <td>0.009737</td>
-      <td>7.628496</td>
-      <td>CHW</td>
-      <td>1.109743</td>
-    </tr>
-    <tr>
-      <td>16.000000</td>
-      <td>15.456740</td>
-      <td>13.971287</td>
-      <td>13.473210</td>
-      <td>15.820000</td>
-      <td>17700.0</td>
-      <td>4460.0</td>
-      <td>0.021706</td>
-      <td>3.514713</td>
-      <td>CLST</td>
-      <td>1.137802</td>
-    </tr>
-    <tr>
-      <td>86.589996</td>
-      <td>74.430400</td>
-      <td>62.700400</td>
-      <td>59.296550</td>
-      <td>85.610001</td>
-      <td>2632800.0</td>
-      <td>1286476.0</td>
-      <td>0.179181</td>
-      <td>16.336869</td>
-      <td>FLS</td>
-      <td>1.144721</td>
-    </tr>
-    <tr>
-      <td>20.768000</td>
-      <td>19.892300</td>
-      <td>19.225460</td>
-      <td>18.723005</td>
-      <td>20.500000</td>
-      <td>6800.0</td>
-      <td>4376.0</td>
-      <td>0.019492</td>
-      <td>4.402205</td>
-      <td>AIRTP</td>
-      <td>1.307315</td>
-    </tr>
-    <tr>
-      <td>22.879999</td>
-      <td>22.174860</td>
-      <td>21.460673</td>
-      <td>21.081830</td>
-      <td>22.540001</td>
-      <td>7600.0</td>
-      <td>3620.0</td>
-      <td>0.016068</td>
-      <td>3.179903</td>
-      <td>CUBB</td>
-      <td>1.508422</td>
-    </tr>
-    <tr>
-      <td>39.000000</td>
-      <td>35.277800</td>
-      <td>33.548933</td>
-      <td>33.295250</td>
-      <td>38.380001</td>
-      <td>1053900.0</td>
-      <td>651510.0</td>
-      <td>0.036834</td>
-      <td>10.551111</td>
-      <td>BIP</td>
-      <td>1.615422</td>
-    </tr>
-    <tr>
-      <td>66.790001</td>
-      <td>61.704600</td>
-      <td>59.533067</td>
-      <td>56.722850</td>
-      <td>65.510002</td>
-      <td>1369100.0</td>
-      <td>626114.0</td>
-      <td>0.110000</td>
-      <td>8.241526</td>
-      <td>RRR</td>
-      <td>1.953898</td>
-    </tr>
-    <tr>
-      <td>147.839996</td>
-      <td>138.796001</td>
-      <td>127.663867</td>
-      <td>124.704100</td>
-      <td>144.830002</td>
-      <td>352100.0</td>
-      <td>205456.0</td>
-      <td>0.178388</td>
-      <td>6.516034</td>
-      <td>IHG</td>
-      <td>2.078295</td>
-    </tr>
-    <tr>
-      <td>499.779999</td>
-      <td>430.104199</td>
-      <td>386.890800</td>
-      <td>355.565851</td>
-      <td>489.519989</td>
-      <td>272600.0</td>
-      <td>177986.0</td>
-      <td>1.352322</td>
-      <td>16.199749</td>
-      <td>IESC</td>
-      <td>2.095933</td>
-    </tr>
-    <tr>
-      <td>33.169998</td>
-      <td>26.761400</td>
-      <td>23.871600</td>
-      <td>22.560250</td>
-      <td>32.400002</td>
-      <td>10500.0</td>
-      <td>5198.0</td>
-      <td>0.061654</td>
-      <td>23.947171</td>
-      <td>CMTV</td>
-      <td>2.376533</td>
-    </tr>
-    <tr>
-      <td>261.320007</td>
-      <td>234.880600</td>
-      <td>227.975267</td>
-      <td>227.007200</td>
-      <td>254.339996</td>
-      <td>4826900.0</td>
-      <td>3301898.0</td>
-      <td>0.076903</td>
-      <td>11.256531</td>
-      <td>UNP</td>
-      <td>2.744362</td>
-    </tr>
-    <tr>
-      <td>33.439999</td>
-      <td>27.398200</td>
-      <td>27.021667</td>
-      <td>27.014800</td>
-      <td>32.509998</td>
-      <td>16223000.0</td>
-      <td>7046976.0</td>
-      <td>0.043687</td>
-      <td>22.051809</td>
-      <td>STM</td>
-      <td>2.860659</td>
-    </tr>
-    <tr>
-      <td>323.700012</td>
-      <td>292.847399</td>
-      <td>276.565599</td>
-      <td>269.887449</td>
-      <td>314.380005</td>
-      <td>3105100.0</td>
-      <td>1790880.0</td>
-      <td>0.440648</td>
-      <td>10.535389</td>
-      <td>HLT</td>
-      <td>2.964567</td>
-    </tr>
-    <tr>
-      <td>67.379997</td>
-      <td>58.354800</td>
-      <td>53.582600</td>
-      <td>51.987050</td>
-      <td>65.199997</td>
-      <td>19276400.0</td>
-      <td>9497900.0</td>
-      <td>0.131018</td>
-      <td>15.466075</td>
-      <td>ON</td>
-      <td>3.343559</td>
-    </tr>
-    <tr>
-      <td>49.430000</td>
-      <td>42.579600</td>
-      <td>36.351321</td>
-      <td>34.398930</td>
-      <td>47.830002</td>
-      <td>8177400.0</td>
-      <td>4844816.0</td>
-      <td>0.093457</td>
-      <td>16.088456</td>
-      <td>DD</td>
-      <td>3.345178</td>
-    </tr>
-    <tr>
-      <td>90.949997</td>
-      <td>79.863801</td>
-      <td>69.715533</td>
-      <td>64.705400</td>
-      <td>87.540001</td>
-      <td>3849900.0</td>
-      <td>1822302.0</td>
-      <td>0.201273</td>
-      <td>13.881379</td>
-      <td>LSCC</td>
-      <td>3.895358</td>
-    </tr>
-    <tr>
-      <td>11.330000</td>
-      <td>9.450600</td>
-      <td>8.341800</td>
-      <td>7.729200</td>
-      <td>10.860000</td>
-      <td>406200.0</td>
-      <td>271150.0</td>
-      <td>0.026069</td>
-      <td>19.886568</td>
-      <td>HSHP</td>
-      <td>4.327811</td>
-    </tr>
-    <tr>
+      <td>2.380000</td>
+      <td>2.105000</td>
+      <td>1.672000</td>
+      <td>1.535950</td>
       <td>2.360000</td>
-      <td>2.097200</td>
-      <td>1.664333</td>
-      <td>1.529150</td>
-      <td>2.250000</td>
-      <td>64356200.0</td>
-      <td>3516724.0</td>
-      <td>0.005682</td>
-      <td>12.530989</td>
+      <td>11328328.0</td>
+      <td>3723668.56</td>
+      <td>0.005763</td>
+      <td>13.064139</td>
       <td>CCO</td>
-      <td>4.888884</td>
+      <td>0.847467</td>
     </tr>
     <tr>
-      <td>104.000000</td>
-      <td>86.151400</td>
-      <td>80.144667</td>
-      <td>76.970450</td>
-      <td>96.760002</td>
-      <td>6078900.0</td>
-      <td>1801264.0</td>
-      <td>0.184030</td>
-      <td>20.717713</td>
-      <td>HAS</td>
-      <td>7.482428</td>
+      <td>10.980000</td>
+      <td>10.543400</td>
+      <td>10.361467</td>
+      <td>10.252750</td>
+      <td>10.850000</td>
+      <td>68902.0</td>
+      <td>39280.04</td>
+      <td>0.004050</td>
+      <td>4.140975</td>
+      <td>VPV</td>
+      <td>1.198149</td>
     </tr>
     <tr>
-      <td>359.350006</td>
-      <td>314.059401</td>
-      <td>285.175402</td>
-      <td>279.534201</td>
-      <td>333.239990</td>
-      <td>4006200.0</td>
-      <td>1570782.0</td>
-      <td>0.483565</td>
-      <td>14.421032</td>
-      <td>MAR</td>
-      <td>7.835199</td>
+      <td>15.750000</td>
+      <td>12.942400</td>
+      <td>12.470200</td>
+      <td>11.946150</td>
+      <td>15.560000</td>
+      <td>1400697.0</td>
+      <td>857581.94</td>
+      <td>0.027029</td>
+      <td>21.693040</td>
+      <td>VIV</td>
+      <td>1.221077</td>
     </tr>
     <tr>
-      <td>32.910000</td>
-      <td>28.292800</td>
-      <td>27.634333</td>
-      <td>26.672250</td>
-      <td>30.170000</td>
-      <td>5400900.0</td>
-      <td>813440.0</td>
-      <td>0.029153</td>
-      <td>16.319346</td>
-      <td>PHG</td>
-      <td>9.081869</td>
+      <td>14.775000</td>
+      <td>12.296100</td>
+      <td>11.799700</td>
+      <td>11.647625</td>
+      <td>14.560000</td>
+      <td>14663441.0</td>
+      <td>9064578.82</td>
+      <td>0.013390</td>
+      <td>20.160048</td>
+      <td>PBR-A</td>
+      <td>1.476643</td>
     </tr>
     <tr>
-      <td>5.070000</td>
-      <td>4.071120</td>
-      <td>3.607160</td>
-      <td>3.299725</td>
-      <td>4.560000</td>
-      <td>23000.0</td>
-      <td>9446.0</td>
-      <td>0.010784</td>
-      <td>24.535757</td>
-      <td>MI</td>
-      <td>11.184216</td>
+      <td>44.924999</td>
+      <td>40.433700</td>
+      <td>36.288167</td>
+      <td>34.553725</td>
+      <td>44.220001</td>
+      <td>387814.0</td>
+      <td>201504.28</td>
+      <td>0.079151</td>
+      <td>11.107812</td>
+      <td>TX</td>
+      <td>1.594297</td>
     </tr>
     <tr>
-      <td>26.430000</td>
-      <td>21.710200</td>
-      <td>16.630847</td>
-      <td>13.511355</td>
-      <td>23.570000</td>
-      <td>115100.0</td>
-      <td>29940.0</td>
-      <td>0.091265</td>
-      <td>21.740013</td>
-      <td>NBTX</td>
-      <td>12.134071</td>
+      <td>21.379999</td>
+      <td>17.196200</td>
+      <td>12.316233</td>
+      <td>10.787775</td>
+      <td>20.940001</td>
+      <td>1634445.0</td>
+      <td>1049762.90</td>
+      <td>0.069403</td>
+      <td>24.329789</td>
+      <td>NESR</td>
+      <td>2.101235</td>
     </tr>
     <tr>
-      <td>8.190000</td>
-      <td>6.657000</td>
-      <td>6.288067</td>
-      <td>6.227300</td>
-      <td>7.170000</td>
-      <td>625400.0</td>
-      <td>148256.0</td>
-      <td>0.004679</td>
-      <td>23.028385</td>
-      <td>RLGT</td>
-      <td>14.225934</td>
+      <td>68.209999</td>
+      <td>56.111800</td>
+      <td>52.324267</td>
+      <td>49.528200</td>
+      <td>66.699997</td>
+      <td>295419.0</td>
+      <td>207026.38</td>
+      <td>0.136383</td>
+      <td>21.560882</td>
+      <td>SHG</td>
+      <td>2.263871</td>
+    </tr>
+    <tr>
+      <td>8.025000</td>
+      <td>6.449300</td>
+      <td>6.158500</td>
+      <td>5.899075</td>
+      <td>7.830000</td>
+      <td>735042.0</td>
+      <td>441374.84</td>
+      <td>0.011875</td>
+      <td>24.432103</td>
+      <td>OBE</td>
+      <td>2.490418</td>
+    </tr>
+    <tr>
+      <td>29.959999</td>
+      <td>27.232200</td>
+      <td>25.498600</td>
+      <td>24.741400</td>
+      <td>29.160000</td>
+      <td>313554.0</td>
+      <td>143237.08</td>
+      <td>0.033743</td>
+      <td>10.016815</td>
+      <td>CCNE</td>
+      <td>2.743482</td>
+    </tr>
+    <tr>
+      <td>10.110000</td>
+      <td>8.592600</td>
+      <td>8.580800</td>
+      <td>8.555600</td>
+      <td>9.800000</td>
+      <td>603018.0</td>
+      <td>278652.36</td>
+      <td>0.002223</td>
+      <td>17.659377</td>
+      <td>LUXE</td>
+      <td>3.163260</td>
+    </tr>
+    <tr>
+      <td>254.735001</td>
+      <td>224.134700</td>
+      <td>206.555633</td>
+      <td>205.311125</td>
+      <td>246.449997</td>
+      <td>1153665.0</td>
+      <td>769211.30</td>
+      <td>0.315935</td>
+      <td>13.652639</td>
+      <td>WAB</td>
+      <td>3.361738</td>
+    </tr>
+    <tr>
+      <td>227.869995</td>
+      <td>199.004200</td>
+      <td>191.709000</td>
+      <td>184.506000</td>
+      <td>218.460007</td>
+      <td>2407975.0</td>
+      <td>911741.50</td>
+      <td>0.342512</td>
+      <td>14.505118</td>
+      <td>THC</td>
+      <td>4.307419</td>
+    </tr>
+    <tr>
+      <td>26.684999</td>
+      <td>22.437700</td>
+      <td>20.546767</td>
+      <td>19.936625</td>
+      <td>25.520000</td>
+      <td>12626366.0</td>
+      <td>8343665.32</td>
+      <td>0.048006</td>
+      <td>18.929300</td>
+      <td>QXO</td>
+      <td>4.565043</td>
+    </tr>
+    <tr>
+      <td>67.250000</td>
+      <td>56.485000</td>
+      <td>52.497333</td>
+      <td>50.676050</td>
+      <td>64.250000</td>
+      <td>2547628.0</td>
+      <td>1726906.56</td>
+      <td>0.127627</td>
+      <td>19.058157</td>
+      <td>TEX</td>
+      <td>4.669261</td>
+    </tr>
+    <tr>
+      <td>3.560000</td>
+      <td>3.124200</td>
+      <td>3.039867</td>
+      <td>2.938900</td>
+      <td>3.400000</td>
+      <td>49449.0</td>
+      <td>32840.98</td>
+      <td>0.004999</td>
+      <td>13.949169</td>
+      <td>RAVE</td>
+      <td>4.705878</td>
+    </tr>
+    <tr>
+      <td>11.590000</td>
+      <td>9.960800</td>
+      <td>8.728067</td>
+      <td>8.108100</td>
+      <td>11.050000</td>
+      <td>287053.0</td>
+      <td>167949.06</td>
+      <td>0.024420</td>
+      <td>16.356117</td>
+      <td>SHIP</td>
+      <td>4.886877</td>
+    </tr>
+    <tr>
+      <td>11.138000</td>
+      <td>9.612960</td>
+      <td>8.849053</td>
+      <td>8.698140</td>
+      <td>10.600000</td>
+      <td>1009397.0</td>
+      <td>550585.94</td>
+      <td>0.018602</td>
+      <td>15.864411</td>
+      <td>TK</td>
+      <td>5.075464</td>
+    </tr>
+    <tr>
+      <td>420.654999</td>
+      <td>341.744502</td>
+      <td>290.710167</td>
+      <td>267.619826</td>
+      <td>397.420013</td>
+      <td>600698.0</td>
+      <td>378211.96</td>
+      <td>1.127980</td>
+      <td>23.090495</td>
+      <td>AGX</td>
+      <td>5.846456</td>
+    </tr>
+    <tr>
+      <td>62.980000</td>
+      <td>55.256400</td>
+      <td>53.016533</td>
+      <td>50.474200</td>
+      <td>58.910000</td>
+      <td>2255822.0</td>
+      <td>1157312.44</td>
+      <td>0.114153</td>
+      <td>13.977746</td>
+      <td>GXO</td>
+      <td>6.908843</td>
+    </tr>
+    <tr>
+      <td>54.849998</td>
+      <td>47.077100</td>
+      <td>34.367700</td>
+      <td>31.284400</td>
+      <td>51.209999</td>
+      <td>732148.0</td>
+      <td>466340.96</td>
+      <td>0.149386</td>
+      <td>16.510997</td>
+      <td>ANAB</td>
+      <td>7.107986</td>
+    </tr>
+    <tr>
+      <td>161.352493</td>
+      <td>137.236449</td>
+      <td>133.651683</td>
+      <td>130.502413</td>
+      <td>150.009995</td>
+      <td>1491164.0</td>
+      <td>615369.28</td>
+      <td>0.167770</td>
+      <td>17.572623</td>
+      <td>SITE</td>
+      <td>7.561162</td>
+    </tr>
+    <tr>
+      <td>11.015000</td>
+      <td>9.458900</td>
+      <td>9.350700</td>
+      <td>9.329075</td>
+      <td>9.890000</td>
+      <td>6941001.0</td>
+      <td>2560222.02</td>
+      <td>0.003785</td>
+      <td>16.451176</td>
+      <td>SUZ</td>
+      <td>11.375126</td>
+    </tr>
+    <tr>
+      <td>37.529999</td>
+      <td>30.149800</td>
+      <td>24.992000</td>
+      <td>24.308650</td>
+      <td>31.809999</td>
+      <td>8979363.0</td>
+      <td>1554485.26</td>
+      <td>0.040917</td>
+      <td>24.478434</td>
+      <td>TDC</td>
+      <td>17.981765</td>
     </tr>
   </tbody>
 </table>
+
+  <script>
+    // If DataTables loads, upgrade the table.
+    // If it doesn't, the page still shows a normal table (no infinite loading).
+    window.addEventListener("load", function () {
+      try {
+        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("screenerTable")) {
+          $('#screenerTable').DataTable({
+            pageLength: 25,
+            order: []
+          });
+        } else {
+          console.warn("DataTables not available. Showing plain table.");
+        }
+      } catch (e) {
+        console.warn("DataTables init failed. Showing plain table.", e);
+      }
+    });
+  </script>
+
 </body>
 </html>

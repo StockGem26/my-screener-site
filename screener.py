@@ -1,33 +1,41 @@
 import io
-import time
-import math
 import requests
 import numpy as np
 import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 # -----------------------------
-# Website output writer (GitHub Pages reads /web/index.html)
+# Website output writer (GitHub Pages reads /docs/index.html)
 # -----------------------------
 def write_site(df: pd.DataFrame) -> None:
     out_dir = Path("docs")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Put the CSV INSIDE the web folder so the site can link to it
+    # Always save the CSV into docs/ so the site can link to it
+    if df is None:
+        df = pd.DataFrame()
+
     df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    if df is None or df.empty:
+    if df.empty:
         table_html = "<p>No Stage 2 matches found today.</p>"
     else:
-        table_html = df.head(200).to_html(index=False, escape=True)
+        # Build table HTML
+        table_html = df.head(500).to_html(index=False, escape=True)
+
+        # Ensure the FIRST <table ...> has id/class for DataTables (robust)
+        table_html = table_html.replace(
+            "<table",
+            '<table id="screenerTable" class="display"',
+            1
+        )
 
     html = f"""<!doctype html>
 <html>
@@ -54,14 +62,19 @@ def write_site(df: pd.DataFrame) -> None:
     }}
 
     h1 {{
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }}
 
     .muted {{
       color: #94a3b8;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }}
 
+    a {{
+      color: #38bdf8;
+    }}
+
+    /* Make DataTables match the dark theme */
     table.dataTable {{
       background-color: #1e293b;
       color: #e2e8f0;
@@ -71,8 +84,23 @@ def write_site(df: pd.DataFrame) -> None:
       background-color: #334155;
     }}
 
-    a {{
-      color: #38bdf8;
+    /* Fix DataTables text colors */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_processing,
+    .dataTables_wrapper .dataTables_paginate {{
+      color: #e2e8f0 !important;
+    }}
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select {{
+      background: #0b1220;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 4px 6px;
+      outline: none;
     }}
   </style>
 </head>
@@ -81,16 +109,26 @@ def write_site(df: pd.DataFrame) -> None:
   <h1>📊 Stage 2 Screener</h1>
   <div class="muted">Last updated: <b>{generated_at}</b></div>
 
-  <p><a href="stage2_candidates.csv">Download CSV</a></p>
+  <p><a href="stage2_candidates.csv">Download stage2_candidates.csv</a></p>
 
-  {table_html.replace('<table border="1" class="dataframe">', '<table id="screenerTable" class="display">')}
+  {table_html}
 
   <script>
-    $(document).ready(function() {{
-        $('#screenerTable').DataTable({{
+    // If DataTables loads, upgrade the table.
+    // If it doesn't, the page still shows a normal table (no infinite loading).
+    window.addEventListener("load", function () {{
+      try {{
+        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("screenerTable")) {{
+          $('#screenerTable').DataTable({{
             pageLength: 25,
             order: []
-        }});
+          }});
+        }} else {{
+          console.warn("DataTables not available. Showing plain table.");
+        }}
+      }} catch (e) {{
+        console.warn("DataTables init failed. Showing plain table.", e);
+      }}
     }});
   </script>
 
@@ -114,7 +152,7 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
     def load_table(url: str) -> pd.DataFrame:
         r = requests.get(url, timeout=30)
         r.raise_for_status()
-        # Files are pipe-delimited with a header and a trailing footer line like "File Creation Time: ..."
+        # Pipe-delimited with header + trailing footer line
         text = r.text.strip().splitlines()
         text = "\n".join(text[:-1])  # drop footer
         return pd.read_csv(io.StringIO(text), sep="|")
@@ -124,7 +162,6 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
 
     other = other.rename(columns={"ACT Symbol": "Symbol"})
 
-    # Keep only real tickers, exclude test issues, exclude ETFs using ETF flag == 'Y'
     def clean(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
         df["Symbol"] = df["Symbol"].astype(str).str.strip()
@@ -132,7 +169,6 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
             df = df[df["Test Issue"].astype(str).str.upper() != "Y"]
         if "ETF" in df.columns:
             df = df[df["ETF"].astype(str).str.upper() != "Y"]
-        # Remove weird/empty symbols
         df = df[df["Symbol"].str.len() > 0]
         return df
 
@@ -140,7 +176,7 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
     other = clean(other)
 
     symbols = sorted(set(nasdaq["Symbol"].tolist()) | set(other["Symbol"].tolist()))
-    symbols = [s.replace(".", "-") for s in symbols]  # Yahoo format for BRK.B -> BRK-B
+    symbols = [s.replace(".", "-") for s in symbols]  # Yahoo format BRK.B -> BRK-B
     return symbols
 
 
@@ -292,10 +328,6 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
 if __name__ == "__main__":
     out = scan_all_stage2(max_workers=6, period="2y")
 
-    # Your local file (optional)
-    out.to_csv("stage2_candidates.csv", index=False)
-    print("Saved: stage2_candidates.csv")
-
     # Website files for GitHub Pages
     write_site(out)
-    print("Saved site files: web/index.html and web/stage2_candidates.csv")
+    print("Saved site files: docs/index.html and docs/stage2_candidates.csv")
