@@ -16,7 +16,7 @@ from pathlib import Path
 # Website output writer (GitHub Pages reads /web/index.html)
 # -----------------------------
 def write_site(df: pd.DataFrame) -> None:
-    out_dir = Path("web")
+    out_dir = Path("docs")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Put the CSV INSIDE the web folder so the site can link to it
