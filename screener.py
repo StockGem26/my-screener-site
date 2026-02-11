@@ -29,7 +29,7 @@ def write_site(df: pd.DataFrame) -> None:
     else:
         table_html = df.head(200).to_html(index=False, escape=True)
 
-html = f"""<!doctype html>
+    html = f"""<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
