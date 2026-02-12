@@ -5,13 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Stage 2 Screener</title>
 
-  <!-- DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
-
-  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
-  <!-- DataTables JS -->
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
   <style>
@@ -21,31 +16,10 @@
       background-color: #0f172a;
       color: #e2e8f0;
     }
-
-    h1 {
-      margin-bottom: 6px;
-    }
-
-    .muted {
-      color: #94a3b8;
-      margin-bottom: 18px;
-    }
-
-    a {
-      color: #38bdf8;
-    }
-
-    /* Make DataTables match the dark theme */
-    table.dataTable {
-      background-color: #1e293b;
-      color: #e2e8f0;
-    }
-
-    table.dataTable thead {
-      background-color: #334155;
-    }
-
-    /* Fix DataTables text colors */
+    a { color: #38bdf8; }
+    .muted { color: #94a3b8; margin-bottom: 18px; }
+    table.dataTable { background-color: #1e293b; color: #e2e8f0; }
+    table.dataTable thead { background-color: #334155; }
     .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_filter,
     .dataTables_wrapper .dataTables_info,
@@ -53,26 +27,24 @@
     .dataTables_wrapper .dataTables_paginate {
       color: #e2e8f0 !important;
     }
-
     .dataTables_wrapper .dataTables_filter input,
     .dataTables_wrapper .dataTables_length select {
-      background: #0b1220;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 4px 6px;
-      outline: none;
+      background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
+      border-radius: 6px; padding: 4px 6px; outline: none;
     }
   </style>
 </head>
 <body>
 
   <h1>📊 Stage 2 Screener</h1>
-  <div class="muted">Last updated: <b>2026-02-11 22:07 UTC</b></div>
+  <div class="muted">Last updated: <b>2026-02-12 00:38 UTC</b></div>
 
-  <p><a href="stage2_candidates.csv">Download stage2_candidates.csv</a></p>
+  <p>
+    <a href="stage2_candidates.csv">Download today’s CSV</a>
+    · <a href="history/index.html">History & Performance</a>
+  </p>
 
-  <table id="screenerTable" class="display" border="1" class="dataframe">
+  <table id="todayTable" class="display" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>symbol</th>
@@ -90,17 +62,30 @@
   </thead>
   <tbody>
     <tr>
-      <td>CPBI</td>
-      <td>17.730000</td>
-      <td>17.006120</td>
-      <td>16.164520</td>
-      <td>15.838325</td>
-      <td>17.719999</td>
-      <td>6251.0</td>
-      <td>3565.02</td>
-      <td>0.015320</td>
-      <td>4.256581</td>
-      <td>0.056435</td>
+      <td>FANG</td>
+      <td>169.009995</td>
+      <td>154.682601</td>
+      <td>147.111067</td>
+      <td>145.429450</td>
+      <td>168.990005</td>
+      <td>2986899.0</td>
+      <td>1934533.98</td>
+      <td>0.137271</td>
+      <td>9.262447</td>
+      <td>0.011829</td>
+    </tr>
+    <tr>
+      <td>TVC</td>
+      <td>24.400000</td>
+      <td>24.228400</td>
+      <td>24.044933</td>
+      <td>23.920900</td>
+      <td>24.389999</td>
+      <td>79559.0</td>
+      <td>23713.18</td>
+      <td>0.003920</td>
+      <td>0.708259</td>
+      <td>0.041001</td>
     </tr>
     <tr>
       <td>RLGT</td>
@@ -122,11 +107,24 @@
       <td>7.017733</td>
       <td>6.764550</td>
       <td>8.100000</td>
-      <td>202247.0</td>
-      <td>124234.94</td>
+      <td>202308.0</td>
+      <td>124236.16</td>
       <td>0.013332</td>
       <td>9.505802</td>
       <td>0.123448</td>
+    </tr>
+    <tr>
+      <td>RMT</td>
+      <td>12.010000</td>
+      <td>11.053600</td>
+      <td>10.398533</td>
+      <td>10.006600</td>
+      <td>11.990000</td>
+      <td>181436.0</td>
+      <td>126572.72</td>
+      <td>0.018675</td>
+      <td>8.652386</td>
+      <td>0.166809</td>
     </tr>
     <tr>
       <td>MXF</td>
@@ -246,6 +244,19 @@
       <td>0.425030</td>
     </tr>
     <tr>
+      <td>CIG</td>
+      <td>2.290000</td>
+      <td>2.070200</td>
+      <td>2.025067</td>
+      <td>1.990000</td>
+      <td>2.280000</td>
+      <td>9106354.0</td>
+      <td>4209155.08</td>
+      <td>0.002225</td>
+      <td>10.617329</td>
+      <td>0.438596</td>
+    </tr>
+    <tr>
       <td>HLT</td>
       <td>325.130005</td>
       <td>293.649399</td>
@@ -285,6 +296,19 @@
       <td>0.488400</td>
     </tr>
     <tr>
+      <td>USPH</td>
+      <td>88.139999</td>
+      <td>81.597000</td>
+      <td>81.344533</td>
+      <td>80.044550</td>
+      <td>87.699997</td>
+      <td>307995.0</td>
+      <td>194859.90</td>
+      <td>0.078454</td>
+      <td>8.018676</td>
+      <td>0.501713</td>
+    </tr>
+    <tr>
       <td>STEL</td>
       <td>39.709999</td>
       <td>33.286800</td>
@@ -317,11 +341,37 @@
       <td>66.338533</td>
       <td>65.285450</td>
       <td>80.279999</td>
-      <td>13618038.0</td>
-      <td>9522412.76</td>
+      <td>13620762.0</td>
+      <td>9522467.24</td>
       <td>0.182265</td>
       <td>14.419880</td>
       <td>0.585452</td>
+    </tr>
+    <tr>
+      <td>IQI</td>
+      <td>10.260000</td>
+      <td>10.024600</td>
+      <td>9.808600</td>
+      <td>9.702850</td>
+      <td>10.200000</td>
+      <td>245740.0</td>
+      <td>154254.80</td>
+      <td>0.003335</td>
+      <td>2.348225</td>
+      <td>0.588239</td>
+    </tr>
+    <tr>
+      <td>ADAML</td>
+      <td>23.499901</td>
+      <td>22.931918</td>
+      <td>22.429419</td>
+      <td>22.269645</td>
+      <td>23.350000</td>
+      <td>14934.0</td>
+      <td>8462.68</td>
+      <td>0.012188</td>
+      <td>2.476822</td>
+      <td>0.641972</td>
     </tr>
     <tr>
       <td>HTHT</td>
@@ -330,8 +380,8 @@
       <td>41.251800</td>
       <td>39.729250</td>
       <td>52.790001</td>
-      <td>2076853.0</td>
-      <td>1449041.06</td>
+      <td>2082899.0</td>
+      <td>1449161.98</td>
       <td>0.077718</td>
       <td>8.795238</td>
       <td>0.776662</td>
@@ -376,19 +426,6 @@
       <td>0.990965</td>
     </tr>
     <tr>
-      <td>JOF</td>
-      <td>12.110000</td>
-      <td>11.102000</td>
-      <td>10.602533</td>
-      <td>10.287500</td>
-      <td>11.980000</td>
-      <td>105664.0</td>
-      <td>75339.28</td>
-      <td>0.016689</td>
-      <td>9.079442</td>
-      <td>1.085143</td>
-    </tr>
-    <tr>
       <td>IHD</td>
       <td>7.160000</td>
       <td>6.540200</td>
@@ -408,8 +445,8 @@
       <td>27.579333</td>
       <td>24.825500</td>
       <td>32.980000</td>
-      <td>146575.0</td>
-      <td>99867.50</td>
+      <td>146973.0</td>
+      <td>99875.46</td>
       <td>0.094526</td>
       <td>8.664537</td>
       <td>1.273505</td>
@@ -441,19 +478,6 @@
       <td>1.376046</td>
     </tr>
     <tr>
-      <td>MGA</td>
-      <td>57.779999</td>
-      <td>53.388400</td>
-      <td>48.165067</td>
-      <td>45.356150</td>
-      <td>56.990002</td>
-      <td>2457550.0</td>
-      <td>1510751.00</td>
-      <td>0.102510</td>
-      <td>8.225755</td>
-      <td>1.386203</td>
-    </tr>
-    <tr>
       <td>SSL</td>
       <td>7.590000</td>
       <td>6.679600</td>
@@ -473,8 +497,8 @@
       <td>16.476600</td>
       <td>16.312950</td>
       <td>22.930000</td>
-      <td>828595.0</td>
-      <td>340299.90</td>
+      <td>849620.0</td>
+      <td>340720.40</td>
       <td>0.037067</td>
       <td>21.052907</td>
       <td>1.482774</td>
@@ -512,8 +536,8 @@
       <td>221.856801</td>
       <td>218.071850</td>
       <td>245.949997</td>
-      <td>4768921.0</td>
-      <td>3133378.42</td>
+      <td>4863004.0</td>
+      <td>3135260.08</td>
       <td>0.292318</td>
       <td>8.817840</td>
       <td>1.545031</td>
@@ -545,6 +569,19 @@
       <td>1.651452</td>
     </tr>
     <tr>
+      <td>GLU</td>
+      <td>21.120001</td>
+      <td>19.459200</td>
+      <td>18.463133</td>
+      <td>18.058250</td>
+      <td>20.770000</td>
+      <td>19502.0</td>
+      <td>13802.04</td>
+      <td>0.023133</td>
+      <td>8.534784</td>
+      <td>1.685125</td>
+    </tr>
+    <tr>
       <td>HG</td>
       <td>30.280001</td>
       <td>27.586200</td>
@@ -571,6 +608,19 @@
       <td>1.744189</td>
     </tr>
     <tr>
+      <td>HAS</td>
+      <td>105.879997</td>
+      <td>86.617000</td>
+      <td>80.339333</td>
+      <td>77.194900</td>
+      <td>104.000000</td>
+      <td>3093922.0</td>
+      <td>1842676.44</td>
+      <td>0.189719</td>
+      <td>22.239280</td>
+      <td>1.807690</td>
+    </tr>
+    <tr>
       <td>VPV</td>
       <td>11.050000</td>
       <td>10.544800</td>
@@ -595,19 +645,6 @@
       <td>0.017620</td>
       <td>12.458745</td>
       <td>1.855286</td>
-    </tr>
-    <tr>
-      <td>HAS</td>
-      <td>105.940002</td>
-      <td>86.618200</td>
-      <td>80.339733</td>
-      <td>77.195200</td>
-      <td>104.000000</td>
-      <td>3093699.0</td>
-      <td>1842671.98</td>
-      <td>0.189723</td>
-      <td>22.306862</td>
-      <td>1.865387</td>
     </tr>
     <tr>
       <td>FET</td>
@@ -668,8 +705,8 @@
       <td>12.316300</td>
       <td>10.787825</td>
       <td>20.940001</td>
-      <td>1934142.0</td>
-      <td>1055756.84</td>
+      <td>2112724.0</td>
+      <td>1059328.48</td>
       <td>0.069404</td>
       <td>24.386496</td>
       <td>2.148992</td>
@@ -681,8 +718,8 @@
       <td>120.882933</td>
       <td>117.464450</td>
       <td>152.500000</td>
-      <td>11429244.0</td>
-      <td>7376598.88</td>
+      <td>11430869.0</td>
+      <td>7376631.38</td>
       <td>0.172638</td>
       <td>20.774073</td>
       <td>2.163936</td>
@@ -714,6 +751,19 @@
       <td>2.329260</td>
     </tr>
     <tr>
+      <td>RAVE</td>
+      <td>3.480000</td>
+      <td>3.122600</td>
+      <td>3.039333</td>
+      <td>2.938500</td>
+      <td>3.400000</td>
+      <td>73888.0</td>
+      <td>33329.76</td>
+      <td>0.004993</td>
+      <td>11.445591</td>
+      <td>2.352939</td>
+    </tr>
+    <tr>
       <td>NHI</td>
       <td>88.250000</td>
       <td>79.116200</td>
@@ -725,6 +775,32 @@
       <td>0.039311</td>
       <td>11.544791</td>
       <td>2.354441</td>
+    </tr>
+    <tr>
+      <td>CCNE</td>
+      <td>29.850000</td>
+      <td>27.230000</td>
+      <td>25.497867</td>
+      <td>24.740850</td>
+      <td>29.160000</td>
+      <td>496006.0</td>
+      <td>146886.12</td>
+      <td>0.033735</td>
+      <td>9.621742</td>
+      <td>2.366257</td>
+    </tr>
+    <tr>
+      <td>HWM</td>
+      <td>230.850006</td>
+      <td>209.273400</td>
+      <td>195.981267</td>
+      <td>188.786150</td>
+      <td>225.149994</td>
+      <td>3627302.0</td>
+      <td>2481494.04</td>
+      <td>0.454659</td>
+      <td>10.310248</td>
+      <td>2.531651</td>
     </tr>
     <tr>
       <td>OBE</td>
@@ -740,30 +816,17 @@
       <td>2.554276</td>
     </tr>
     <tr>
-      <td>ITUB</td>
-      <td>9.570000</td>
-      <td>7.737107</td>
-      <td>7.110880</td>
-      <td>6.929714</td>
-      <td>9.320000</td>
-      <td>37255255.0</td>
-      <td>24030480.74</td>
-      <td>0.015861</td>
-      <td>23.689643</td>
-      <td>2.682404</td>
-    </tr>
-    <tr>
-      <td>DHT</td>
-      <td>15.480000</td>
-      <td>13.150600</td>
-      <td>12.430467</td>
-      <td>12.157300</td>
-      <td>15.060000</td>
-      <td>4313861.0</td>
-      <td>2157905.22</td>
-      <td>0.019547</td>
-      <td>17.713257</td>
-      <td>2.788839</td>
+      <td>FTI</td>
+      <td>61.820000</td>
+      <td>50.117600</td>
+      <td>42.293867</td>
+      <td>39.749300</td>
+      <td>60.200001</td>
+      <td>4701315.0</td>
+      <td>3286194.30</td>
+      <td>0.150124</td>
+      <td>23.349880</td>
+      <td>2.691028</td>
     </tr>
     <tr>
       <td>BKR</td>
@@ -772,11 +835,37 @@
       <td>47.550200</td>
       <td>45.104650</td>
       <td>59.549999</td>
-      <td>13527803.0</td>
-      <td>8887838.06</td>
+      <td>13529323.0</td>
+      <td>8887868.46</td>
       <td>0.091538</td>
       <td>20.448047</td>
       <td>2.854745</td>
+    </tr>
+    <tr>
+      <td>IESC</td>
+      <td>514.359985</td>
+      <td>432.019999</td>
+      <td>388.290800</td>
+      <td>357.130650</td>
+      <td>499.779999</td>
+      <td>253494.0</td>
+      <td>181027.88</td>
+      <td>1.349408</td>
+      <td>19.059300</td>
+      <td>2.917281</td>
+    </tr>
+    <tr>
+      <td>HCA</td>
+      <td>531.469971</td>
+      <td>482.522601</td>
+      <td>438.822133</td>
+      <td>422.057550</td>
+      <td>515.849976</td>
+      <td>2393577.0</td>
+      <td>1188517.54</td>
+      <td>0.768201</td>
+      <td>10.144057</td>
+      <td>3.028011</td>
     </tr>
     <tr>
       <td>UFCS</td>
@@ -785,8 +874,8 @@
       <td>32.739933</td>
       <td>31.603850</td>
       <td>37.540001</td>
-      <td>248195.0</td>
-      <td>118261.90</td>
+      <td>265058.0</td>
+      <td>118599.16</td>
       <td>0.043705</td>
       <td>7.276046</td>
       <td>3.143315</td>
@@ -816,19 +905,6 @@
       <td>0.915249</td>
       <td>17.836983</td>
       <td>3.365476</td>
-    </tr>
-    <tr>
-      <td>THC</td>
-      <td>226.350006</td>
-      <td>198.973801</td>
-      <td>191.698867</td>
-      <td>184.498400</td>
-      <td>218.460007</td>
-      <td>3158135.0</td>
-      <td>926744.70</td>
-      <td>0.342404</td>
-      <td>13.758699</td>
-      <td>3.611645</td>
     </tr>
     <tr>
       <td>CNQ</td>
@@ -868,6 +944,19 @@
       <td>0.004024</td>
       <td>24.578784</td>
       <td>3.829794</td>
+    </tr>
+    <tr>
+      <td>ENSG</td>
+      <td>211.919998</td>
+      <td>179.031801</td>
+      <td>172.438133</td>
+      <td>165.813150</td>
+      <td>203.929993</td>
+      <td>552737.0</td>
+      <td>378572.74</td>
+      <td>0.257350</td>
+      <td>18.370031</td>
+      <td>3.918014</td>
     </tr>
     <tr>
       <td>PHIN</td>
@@ -922,17 +1011,17 @@
       <td>4.443900</td>
     </tr>
     <tr>
-      <td>SHIP</td>
-      <td>11.620000</td>
-      <td>9.961400</td>
-      <td>8.728267</td>
-      <td>8.108250</td>
-      <td>11.050000</td>
-      <td>333766.0</td>
-      <td>168883.32</td>
-      <td>0.024422</td>
-      <td>16.650269</td>
-      <td>5.158368</td>
+      <td>GLDD</td>
+      <td>16.950001</td>
+      <td>14.126000</td>
+      <td>12.486400</td>
+      <td>12.154450</td>
+      <td>16.139999</td>
+      <td>13112322.0</td>
+      <td>939090.44</td>
+      <td>0.032938</td>
+      <td>19.991511</td>
+      <td>5.018596</td>
     </tr>
     <tr>
       <td>KB</td>
@@ -987,17 +1076,43 @@
       <td>6.310700</td>
     </tr>
     <tr>
+      <td>TK</td>
+      <td>11.280000</td>
+      <td>9.615800</td>
+      <td>8.850000</td>
+      <td>8.698850</td>
+      <td>10.600000</td>
+      <td>1316085.0</td>
+      <td>556719.70</td>
+      <td>0.018612</td>
+      <td>17.306929</td>
+      <td>6.415088</td>
+    </tr>
+    <tr>
       <td>GTX</td>
       <td>20.799999</td>
       <td>17.836900</td>
       <td>15.202700</td>
       <td>14.078475</td>
       <td>19.420000</td>
-      <td>4179395.0</td>
-      <td>2346549.90</td>
+      <td>4208037.0</td>
+      <td>2347122.74</td>
       <td>0.048899</td>
       <td>16.612188</td>
       <td>7.106072</td>
+    </tr>
+    <tr>
+      <td>TIMB</td>
+      <td>27.110001</td>
+      <td>21.929600</td>
+      <td>21.416533</td>
+      <td>20.585600</td>
+      <td>25.299999</td>
+      <td>819620.0</td>
+      <td>421632.40</td>
+      <td>0.042291</td>
+      <td>23.622869</td>
+      <td>7.154156</td>
     </tr>
     <tr>
       <td>TEX</td>
@@ -1032,8 +1147,8 @@
       <td>34.370367</td>
       <td>31.286400</td>
       <td>51.209999</td>
-      <td>1271747.0</td>
-      <td>477132.94</td>
+      <td>1272529.0</td>
+      <td>477148.58</td>
       <td>0.149415</td>
       <td>17.340730</td>
       <td>7.889086</td>
@@ -1052,19 +1167,6 @@
       <td>8.826082</td>
     </tr>
     <tr>
-      <td>HCSG</td>
-      <td>22.280001</td>
-      <td>19.123200</td>
-      <td>16.989867</td>
-      <td>16.369850</td>
-      <td>19.870001</td>
-      <td>3332080.0</td>
-      <td>766179.60</td>
-      <td>0.045119</td>
-      <td>16.507701</td>
-      <td>12.128836</td>
-    </tr>
-    <tr>
       <td>SUZ</td>
       <td>11.180000</td>
       <td>9.462200</td>
@@ -1081,20 +1183,16 @@
 </table>
 
   <script>
-    // If DataTables loads, upgrade the table.
-    // If it doesn't, the page still shows a normal table (no infinite loading).
     window.addEventListener("load", function () {
       try {
-        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("screenerTable")) {
-          $('#screenerTable').DataTable({
+        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("todayTable")) {
+          $('#todayTable').DataTable({
             pageLength: 25,
             order: []
           });
-        } else {
-          console.warn("DataTables not available. Showing plain table.");
         }
       } catch (e) {
-        console.warn("DataTables init failed. Showing plain table.", e);
+        console.warn("DataTables init failed.", e);
       }
     });
   </script>
