@@ -9,78 +9,92 @@
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #0f172a;
-      color: #e2e8f0;
-    }
-    a { color: #38bdf8; }
-    .muted { color: #94a3b8; margin-bottom: 18px; }
-    table.dataTable { background-color: #1e293b; color: #e2e8f0; }
-    table.dataTable thead { background-color: #334155; }
-    .dataTables_wrapper .dataTables_length,
-    .dataTables_wrapper .dataTables_filter,
-    .dataTables_wrapper .dataTables_info,
-    .dataTables_wrapper .dataTables_processing,
-    .dataTables_wrapper .dataTables_paginate {
-      color: #e2e8f0 !important;
-    }
-    .dataTables_wrapper .dataTables_filter input,
-    .dataTables_wrapper .dataTables_length select {
-      background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-      border-radius: 6px; padding: 4px 6px; outline: none;
-    }
-        /* ===== Color Styling ===== */
-    .pos { color: #22c55e !important; font-weight: 700; }
-    .neg { color: #ef4444 !important; font-weight: 700; }
-    .neu { color: #94a3b8 !important; font-weight: 700; }
+  
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 30px;
+        background-color: #0f172a;
+        color: #e2e8f0;
+      }
+      a { color: #38bdf8; }
+      .muted { color: #94a3b8; margin-bottom: 12px; }
+      table.dataTable { background-color: #1e293b; color: #e2e8f0; }
+      table.dataTable thead { background-color: #334155; }
+      .dataTables_wrapper .dataTables_length,
+      .dataTables_wrapper .dataTables_filter,
+      .dataTables_wrapper .dataTables_info,
+      .dataTables_wrapper .dataTables_processing,
+      .dataTables_wrapper .dataTables_paginate {
+        color: #e2e8f0 !important;
+      }
+      .dataTables_wrapper .dataTables_filter input,
+      .dataTables_wrapper .dataTables_length select {
+        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
+        border-radius: 6px; padding: 4px 6px; outline: none;
+      }
 
-    /* ===== Date Filter Bar ===== */
-    .topbar {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      align-items: center;
-      margin: 12px 0 18px;
-    }
-    .pill {
-      background: #0b1220;
-      border: 1px solid #334155;
-      border-radius: 999px;
-      padding: 6px 10px;
-      color: #cbd5e1;
-      font-size: 13px;
-    }
-    #dateFilter {
-      background: #0b1220;
-      color: #e2e8f0;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      padding: 6px 8px;
-      outline: none;
-    }
-  </style>
+      .pos { color: #22c55e !important; font-weight: 700; }
+      .neg { color: #ef4444 !important; font-weight: 700; }
+      .neu { color: #94a3b8 !important; font-weight: 600; }
+
+      .toolbar {
+        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        margin: 10px 0 16px 0;
+      }
+      .toolbar select {
+        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
+        border-radius: 8px; padding: 6px 10px; outline: none;
+      }
+      .toolbar label { color: #cbd5e1; }
+
+      .stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        background: #0b1220;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin: 10px 0 18px;
+        color: #cbd5e1;
+      }
+      .stats .stat {
+        padding: 2px 0;
+      }
+    </style>
+    
 </head>
 <body>
   <h1>📈 Stage 2 History & Performance</h1>
-  <div class="muted">Updated: <b>2026-02-12 05:37 UTC</b> · Returns are <b>trading days</b>.</div>
+  <div class="muted">Updated: <b>Feb 12, 2026 · 03:13 PM ET</b> · Returns are <b>trading days</b>.</div>
+
+  
+    <div class="stats">
+      <span class="stat"><b>Rows with Now:</b> 60</span>
+      <span class="stat"><b>Win rate (Now &gt; 0):</b> +33.3%</span>
+      <span class="stat"><b>Avg Now:</b> -1.1%</span>
+      <span class="stat"><b>Median Now:</b> -0.5%</span>
+      <span class="stat"><b>Best / Worst Now:</b> +5.0% / -9.9%</span>
+    </div>
+    
 
   <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
 
-  <div class="topbar">
-  <label for="dateFilter"><b>Pick a scan date:</b></label>
-  <select id="dateFilter">
-    <option value="">All dates</option>
-  </select>
-  <span class="pill" id="shownCount">Shown: —</span>
-</div>
+  <div class="toolbar">
+    <label for="dateFilter"><b>Pick date:</b></label>
+    <select id="dateFilter">
+      <option value="">All dates</option>
+    </select>
+    <span class="muted">Select a date to show only that day’s scans.</span>
+  </div>
 
-  <table id="histTable" class="display dataframe" border="1">
+  <table id="histTable" class="display" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
       <th>scan_date</th>
+      <th>days_since_scan</th>
       <th>symbol</th>
       <th>entry_close</th>
       <th>Now</th>
@@ -94,6 +108,7 @@
   <tbody>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ADAML</td>
       <td>23.499901</td>
       <td>+0.0%</td>
@@ -105,9 +120,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ADM</td>
       <td>69.300003</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -116,9 +132,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>AGCO</td>
       <td>138.470001</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -127,9 +144,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>AGX</td>
       <td>422.500000</td>
-      <td>+0.0%</td>
+      <td>+0.8%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -138,9 +156,22 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
+      <td>AKAM</td>
+      <td>105.769997</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-12</td>
+      <td>0</td>
       <td>AMX</td>
       <td>23.580000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -149,8 +180,21 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ANAB</td>
       <td>55.250000</td>
+      <td>-3.7%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-12</td>
+      <td>0</td>
+      <td>ATNI</td>
+      <td>28.620001</td>
       <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
@@ -160,9 +204,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>AZN</td>
       <td>204.759995</td>
-      <td>-0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -171,9 +216,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>BBDO</td>
       <td>3.700000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -182,9 +228,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>BIP</td>
       <td>39.180000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -193,9 +240,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>BKR</td>
       <td>61.250000</td>
-      <td>+0.0%</td>
+      <td>+0.8%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -204,9 +252,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CAT</td>
       <td>775.000000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -215,9 +264,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CCNE</td>
       <td>29.850000</td>
-      <td>+0.0%</td>
+      <td>-0.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -226,6 +276,7 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CCO</td>
       <td>2.370000</td>
       <td>+0.0%</td>
@@ -237,9 +288,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CIG</td>
       <td>2.290000</td>
-      <td>-0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -248,9 +300,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CMCO</td>
       <td>23.270000</td>
-      <td>+0.0%</td>
+      <td>-9.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -259,9 +312,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CNQ</td>
       <td>40.630001</td>
-      <td>+0.0%</td>
+      <td>-1.5%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -270,9 +324,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>CPBI</td>
       <td>17.730000</td>
-      <td>+0.0%</td>
+      <td>-2.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -281,9 +336,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DAR</td>
       <td>49.619999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -292,9 +348,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DBD</td>
       <td>72.360001</td>
-      <td>+0.0%</td>
+      <td>+5.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -303,9 +360,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DCI</td>
       <td>110.570000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -314,9 +372,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DD</td>
       <td>51.529999</td>
-      <td>-0.0%</td>
+      <td>-4.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -325,9 +384,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DHT</td>
       <td>15.480000</td>
-      <td>+0.0%</td>
+      <td>+0.5%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -336,9 +396,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>DSX</td>
       <td>2.440000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -347,9 +408,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ELPC</td>
       <td>10.980000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -358,9 +420,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ENSG</td>
       <td>211.919998</td>
-      <td>+0.0%</td>
+      <td>+1.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -369,9 +432,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ESI</td>
       <td>32.419998</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -380,9 +444,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>FANG</td>
       <td>169.009995</td>
-      <td>+0.0%</td>
+      <td>-1.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -391,9 +456,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>FERG</td>
       <td>267.359985</td>
-      <td>+0.0%</td>
+      <td>-0.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -402,9 +468,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>FET</td>
       <td>49.169998</td>
-      <td>+0.0%</td>
+      <td>-2.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -413,9 +480,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>FT</td>
       <td>8.230000</td>
-      <td>+0.0%</td>
+      <td>+0.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -424,9 +492,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>FTI</td>
       <td>61.820000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -435,9 +504,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GASS</td>
       <td>8.110000</td>
-      <td>+0.0%</td>
+      <td>-3.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -446,9 +516,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GILD</td>
       <td>155.800003</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -457,9 +528,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GLDD</td>
       <td>16.950001</td>
-      <td>+0.0%</td>
+      <td>-0.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -468,9 +540,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GLU</td>
       <td>21.120001</td>
-      <td>+0.0%</td>
+      <td>+2.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -479,6 +552,19 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
+      <td>GPAT</td>
+      <td>10.760000</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-12</td>
+      <td>0</td>
       <td>GPJA</td>
       <td>23.309999</td>
       <td>+0.0%</td>
@@ -490,9 +576,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GTX</td>
       <td>20.799999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -501,9 +588,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GVA</td>
       <td>133.169998</td>
-      <td>+0.0%</td>
+      <td>-3.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -512,9 +600,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>GXO</td>
       <td>63.349998</td>
-      <td>+0.0%</td>
+      <td>+2.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -523,9 +612,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HAS</td>
       <td>105.879997</td>
-      <td>+0.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -534,9 +624,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HCA</td>
       <td>531.469971</td>
-      <td>+0.0%</td>
+      <td>+0.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -545,9 +636,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HCSG</td>
       <td>22.280001</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -556,9 +648,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HG</td>
       <td>30.280001</td>
-      <td>+0.0%</td>
+      <td>+2.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -567,9 +660,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HLT</td>
       <td>325.130005</td>
-      <td>+0.0%</td>
+      <td>-0.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -578,9 +672,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HSHP</td>
       <td>11.790000</td>
-      <td>+0.0%</td>
+      <td>-2.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -589,9 +684,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HTHT</td>
       <td>53.200001</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -600,9 +696,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>HWM</td>
       <td>230.850006</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -611,9 +708,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>IDE</td>
       <td>13.890000</td>
-      <td>+0.0%</td>
+      <td>+0.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -622,9 +720,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>IESC</td>
       <td>514.359985</td>
-      <td>+0.0%</td>
+      <td>-2.7%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -633,9 +732,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>IHD</td>
       <td>7.160000</td>
-      <td>+0.0%</td>
+      <td>-0.3%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -644,9 +744,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>IQI</td>
       <td>10.260000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -655,9 +756,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ITUB</td>
       <td>9.570000</td>
-      <td>-0.0%</td>
+      <td>-3.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -666,9 +768,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>JOF</td>
       <td>12.110000</td>
-      <td>+0.0%</td>
+      <td>-1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -677,9 +780,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>KB</td>
       <td>111.779999</td>
-      <td>+0.0%</td>
+      <td>+1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -688,9 +792,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>KF</td>
       <td>48.584999</td>
-      <td>+0.0%</td>
+      <td>+1.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -699,9 +804,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>LUXE</td>
       <td>9.950000</td>
-      <td>+0.0%</td>
+      <td>+1.7%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -710,8 +816,21 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>MCHP</td>
       <td>80.750000</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-12</td>
+      <td>0</td>
+      <td>MGA</td>
+      <td>57.779999</td>
       <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
@@ -721,17 +840,7 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
-      <td>MGA</td>
-      <td>57.779999</td>
-      <td>-0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>2026-02-12</td>
+      <td>0</td>
       <td>MXF</td>
       <td>22.700001</td>
       <td>+0.0%</td>
@@ -743,9 +852,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NATL</td>
       <td>41.250000</td>
-      <td>+0.0%</td>
+      <td>-0.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -754,9 +864,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NESR</td>
       <td>21.389999</td>
-      <td>-0.0%</td>
+      <td>-3.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -765,9 +876,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NG</td>
       <td>11.770000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -776,9 +888,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NGG</td>
       <td>90.639999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -787,9 +900,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NHI</td>
       <td>88.250000</td>
-      <td>+0.0%</td>
+      <td>+1.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -798,9 +912,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NPO</td>
       <td>277.170013</td>
-      <td>+0.0%</td>
+      <td>-0.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -809,9 +924,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NVS</td>
       <td>160.059998</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -820,9 +936,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>NXPI</td>
       <td>249.750000</td>
-      <td>+0.0%</td>
+      <td>-2.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -831,9 +948,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>OBE</td>
       <td>8.030000</td>
-      <td>+0.0%</td>
+      <td>-8.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -842,9 +960,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>OHI</td>
       <td>46.779999</td>
-      <td>-0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -853,9 +972,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>OSK</td>
       <td>174.520004</td>
-      <td>+0.0%</td>
+      <td>-3.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -864,9 +984,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PANL</td>
       <td>9.010000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -875,9 +996,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PBR</td>
       <td>15.830000</td>
-      <td>-0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -886,9 +1008,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PBR-A</td>
       <td>14.760000</td>
-      <td>+0.0%</td>
+      <td>-3.7%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -897,9 +1020,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PCQ</td>
       <td>9.170000</td>
-      <td>+0.0%</td>
+      <td>-1.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -908,9 +1032,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PDS</td>
       <td>89.940002</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -919,9 +1044,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PHIN</td>
       <td>77.760002</td>
-      <td>+0.0%</td>
+      <td>-4.8%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -930,9 +1056,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PPIH</td>
       <td>33.400002</td>
-      <td>+0.0%</td>
+      <td>-4.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -941,9 +1068,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>PR</td>
       <td>17.180000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -952,9 +1080,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>QXO</td>
       <td>27.059999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -963,9 +1092,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>RAVE</td>
       <td>3.480000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -974,9 +1104,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>RBC</td>
       <td>550.530029</td>
-      <td>+0.0%</td>
+      <td>+0.5%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -985,9 +1116,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>RLGT</td>
       <td>8.200000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -996,9 +1128,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>RMT</td>
       <td>12.010000</td>
-      <td>+0.0%</td>
+      <td>-1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1007,9 +1140,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ROL</td>
       <td>65.599998</td>
-      <td>+0.0%</td>
+      <td>-8.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1018,9 +1152,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SDRL</td>
       <td>43.009998</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1029,9 +1164,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SEB</td>
       <td>5568.890137</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1040,9 +1176,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SHG</td>
       <td>68.250000</td>
-      <td>+0.0%</td>
+      <td>+2.7%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1051,9 +1188,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SHIP</td>
       <td>11.620000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1062,9 +1200,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SITE</td>
       <td>163.250000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1073,9 +1212,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SSL</td>
       <td>7.590000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1084,9 +1224,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>ST</td>
       <td>37.220001</td>
-      <td>+0.0%</td>
+      <td>-2.5%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1095,9 +1236,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>STEL</td>
       <td>39.709999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1106,9 +1248,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>SUZ</td>
       <td>11.180000</td>
-      <td>+0.0%</td>
+      <td>-0.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1117,9 +1260,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TEX</td>
       <td>69.080002</td>
-      <td>+0.0%</td>
+      <td>-2.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1128,9 +1272,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>THC</td>
       <td>226.350006</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1139,9 +1284,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TIMB</td>
       <td>27.110001</td>
-      <td>+0.0%</td>
+      <td>+0.8%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1150,9 +1296,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TK</td>
       <td>11.280000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1161,9 +1308,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TRP</td>
       <td>60.919998</td>
-      <td>+0.0%</td>
+      <td>+1.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1172,9 +1320,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TSM</td>
       <td>374.089996</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1183,9 +1332,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TTE</td>
       <td>77.720001</td>
-      <td>+0.0%</td>
+      <td>-1.8%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1194,9 +1344,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TVC</td>
       <td>24.400000</td>
-      <td>-0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1205,9 +1356,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>TX</td>
       <td>45.250000</td>
-      <td>+0.0%</td>
+      <td>-1.3%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1216,9 +1368,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>UFCS</td>
       <td>38.720001</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1227,9 +1380,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>UGP</td>
       <td>5.250000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1238,9 +1392,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>USPH</td>
       <td>88.139999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1249,9 +1404,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>VIV</td>
       <td>15.800000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1260,9 +1416,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>VPV</td>
       <td>11.050000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1271,9 +1428,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>WAB</td>
       <td>254.419998</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1282,9 +1440,10 @@
     </tr>
     <tr>
       <td>2026-02-12</td>
+      <td>0</td>
       <td>WMB</td>
       <td>71.120003</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1294,69 +1453,85 @@
   </tbody>
 </table>
 
-<script>
-  function parseSignedNumber(text) {
-    if (!text) return null;
-    const cleaned = text.replace(/[%,$]/g, "").trim();
-    const n = Number(cleaned);
-    if (!Number.isFinite(n)) return null;
-    if (Object.is(n, -0)) return 0;
-    return n;
-  }
-
-  function colorizeCell(td) {
-    const n = parseSignedNumber(td.textContent);
-    if (n === null) return;
-    td.classList.remove("pos", "neg", "neu");
-    if (n > 0) td.classList.add("pos");
-    else if (n < 0) td.classList.add("neg");
-    else td.classList.add("neu");
-  }
-
-  window.addEventListener("load", function () {
-    try {
-      const table = $('#histTable').DataTable({
-        pageLength: 50,
-        order: [[0, 'desc']],
-        createdRow: function (row) {
-          Array.from(row.cells).forEach(colorizeCell);
-        }
-      });
-
-      const scanDateColIdx = 0;
-      const dateFilter = document.getElementById("dateFilter");
-      const datesSet = new Set();
-
-      table.column(scanDateColIdx).data().each(function (d) {
-        if (d) datesSet.add(String(d).trim());
-      });
-
-      Array.from(datesSet).sort().reverse().forEach(function (dateStr) {
-        const opt = document.createElement("option");
-        opt.value = dateStr;
-        opt.textContent = dateStr;
-        dateFilter.appendChild(opt);
-      });
-
-      function updateShownCount() {
-        const shown = table.rows({ filter: 'applied' }).count();
-        document.getElementById("shownCount").textContent = "Shown: " + shown;
+  
+    <script>
+      function toNumber(x) {
+        if (x == null) return null;
+        const s = String(x).replace(/[%,$]/g, "").trim();
+        if (s === "" || s === "—") return null;
+        const n = Number(s);
+        if (!Number.isFinite(n)) return null;
+        // kill "-0"
+        if (Object.is(n, -0)) return 0;
+        // kill tiny noise
+        if (Math.abs(n) < 0.05) return 0;
+        return n;
       }
 
-      dateFilter.addEventListener("change", function () {
-        const val = this.value;
-        if (!val) table.column(scanDateColIdx).search("").draw();
-        else table.column(scanDateColIdx).search("^" + val + "$", true, false).draw();
-        updateShownCount();
-      });
+      function colorizeTable(tableSelector) {
+        const table = $(tableSelector).DataTable();
 
-      table.on('draw', updateShownCount);
-      updateShownCount();
+        function apply() {
+          $(tableSelector + " tbody tr").each(function () {
+            $(this).find("td").each(function () {
+              const raw = $(this).text();
+              const n = toNumber(raw);
+              if (n === null) return;
+              $(this).removeClass("pos neg neu");
+              if (n > 0) $(this).addClass("pos");
+              else if (n < 0) $(this).addClass("neg");
+              else $(this).addClass("neu");
+            });
+          });
+        }
 
-    } catch (e) {
-      console.warn("Init failed.", e);
-    }
-  });
-</script>
+        apply();
+        table.on("draw", function () { apply(); });
+      }
+    </script>
+    
+
+  <script>
+    window.addEventListener("load", function () {
+      try {
+        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("histTable")) {
+          const table = $('#histTable').DataTable({
+            pageLength: 50,
+            order: [[0, 'desc']]
+          });
+
+          // Populate dropdown from unique scan_date values (column 0)
+          const dateIdx = 0;
+          const seen = new Set();
+          table.column(dateIdx).data().each(function (d) {
+            if (d) seen.add(String(d).trim());
+          });
+
+          const dates = Array.from(seen).sort().reverse();
+          const sel = document.getElementById("dateFilter");
+          dates.forEach(function (d) {
+            const opt = document.createElement("option");
+            opt.value = d;
+            opt.textContent = d;
+            sel.appendChild(opt);
+          });
+
+          sel.addEventListener("change", function () {
+            const v = this.value;
+            if (!v) {
+              table.column(dateIdx).search("").draw();
+            } else {
+              table.column(dateIdx).search("^" + v + "$", true, false).draw();
+            }
+          });
+
+          // Colorize numeric cells (Now/15d/...)
+          colorizeTable("#histTable");
+        }
+      } catch (e) {
+        console.warn("DataTables init failed.", e);
+      }
+    });
+  </script>
 </body>
 </html>
