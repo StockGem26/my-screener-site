@@ -32,6 +32,35 @@
       background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
       border-radius: 6px; padding: 4px 6px; outline: none;
     }
+        /* ===== Color Styling ===== */
+    .pos { color: #22c55e !important; font-weight: 700; }
+    .neg { color: #ef4444 !important; font-weight: 700; }
+    .neu { color: #94a3b8 !important; font-weight: 700; }
+
+    /* ===== Date Filter Bar ===== */
+    .topbar {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 12px 0 18px;
+    }
+    .pill {
+      background: #0b1220;
+      border: 1px solid #334155;
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+    #dateFilter {
+      background: #0b1220;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 6px 8px;
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -40,7 +69,15 @@
 
   <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
 
-  <table id="histTable" class="display" border="1" class="dataframe">
+  <div class="topbar">
+  <label for="dateFilter"><b>Pick a scan date:</b></label>
+  <select id="dateFilter">
+    <option value="">All dates</option>
+  </select>
+  <span class="pill" id="shownCount">Shown: —</span>
+</div>
+
+  <table id="histTable" class="display dataframe" border="1">
   <thead>
     <tr style="text-align: right;">
       <th>scan_date</th>
@@ -1257,19 +1294,69 @@
   </tbody>
 </table>
 
-  <script>
-    window.addEventListener("load", function () {
-      try {
-        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("histTable")) {
-          $('#histTable').DataTable({
-            pageLength: 50,
-            order: [[0, 'desc']]
-          });
+<script>
+  function parseSignedNumber(text) {
+    if (!text) return null;
+    const cleaned = text.replace(/[%,$]/g, "").trim();
+    const n = Number(cleaned);
+    if (!Number.isFinite(n)) return null;
+    if (Object.is(n, -0)) return 0;
+    return n;
+  }
+
+  function colorizeCell(td) {
+    const n = parseSignedNumber(td.textContent);
+    if (n === null) return;
+    td.classList.remove("pos", "neg", "neu");
+    if (n > 0) td.classList.add("pos");
+    else if (n < 0) td.classList.add("neg");
+    else td.classList.add("neu");
+  }
+
+  window.addEventListener("load", function () {
+    try {
+      const table = $('#histTable').DataTable({
+        pageLength: 50,
+        order: [[0, 'desc']],
+        createdRow: function (row) {
+          Array.from(row.cells).forEach(colorizeCell);
         }
-      } catch (e) {
-        console.warn("DataTables init failed.", e);
+      });
+
+      const scanDateColIdx = 0;
+      const dateFilter = document.getElementById("dateFilter");
+      const datesSet = new Set();
+
+      table.column(scanDateColIdx).data().each(function (d) {
+        if (d) datesSet.add(String(d).trim());
+      });
+
+      Array.from(datesSet).sort().reverse().forEach(function (dateStr) {
+        const opt = document.createElement("option");
+        opt.value = dateStr;
+        opt.textContent = dateStr;
+        dateFilter.appendChild(opt);
+      });
+
+      function updateShownCount() {
+        const shown = table.rows({ filter: 'applied' }).count();
+        document.getElementById("shownCount").textContent = "Shown: " + shown;
       }
-    });
-  </script>
+
+      dateFilter.addEventListener("change", function () {
+        const val = this.value;
+        if (!val) table.column(scanDateColIdx).search("").draw();
+        else table.column(scanDateColIdx).search("^" + val + "$", true, false).draw();
+        updateShownCount();
+      });
+
+      table.on('draw', updateShownCount);
+      updateShownCount();
+
+    } catch (e) {
+      console.warn("Init failed.", e);
+    }
+  });
+</script>
 </body>
 </html>
