@@ -7,6 +7,7 @@ import yfinance as yf
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 HORIZONS = [15, 30, 60, 100, 200]  # trading days
@@ -18,10 +19,26 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 YF_CHUNK_SIZE = 250        # 200–400 usually best
 CACHE_STALE_DAYS = 5       # allow weekends/holidays
 
+NY_TZ = ZoneInfo("America/New_York")
+
 
 # -----------------------------
-# Small helpers
+# Time helpers (NY / UTC)
 # -----------------------------
+def _now_ny() -> datetime:
+    return datetime.now(NY_TZ)
+
+
+def _today_ny_str() -> str:
+    # scan_date should match NY market day, not UTC rollover
+    return _now_ny().strftime("%Y-%m-%d")
+
+
+def _generated_at_ny_str() -> str:
+    # Cosmetic #1: nicer timestamp format
+    return _now_ny().strftime("%b %d, %Y · %I:%M %p ET")
+
+
 def _today_utc_date() -> pd.Timestamp:
     return pd.Timestamp(datetime.now(timezone.utc).date())
 
@@ -36,7 +53,14 @@ def _is_cache_fresh(last_dt: pd.Timestamp | None) -> bool:
         return False
 
 
+# -----------------------------
+# Formatting helpers
+# -----------------------------
 def _pct_str(x: float | None) -> str:
+    """
+    Cosmetic #2: clean +x.x% formatting and kills "-0.0%".
+    Treat tiny values as 0.0 to avoid negative zero.
+    """
     if x is None:
         return "—"
     try:
@@ -44,6 +68,11 @@ def _pct_str(x: float | None) -> str:
             return "—"
     except Exception:
         pass
+
+    # kill -0.0 and tiny noise
+    if abs(x) < 0.05:
+        x = 0.0
+
     sign = "+" if x >= 0 else ""
     return f"{sign}{x:.1f}%"
 
@@ -285,17 +314,47 @@ def _forward_return_trading_days(close: pd.Series, entry_date: pd.Timestamp, ent
     return (target_close / entry_close - 1.0) * 100.0
 
 
-def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -> pd.DataFrame:
+def _compute_summary_stats(ret_series: pd.Series) -> dict:
+    """
+    Cosmetic #4: win-rate summary bar stats.
+    Uses ret_now numeric series (percent).
+    """
+    s = pd.to_numeric(ret_series, errors="coerce").dropna()
+    if s.empty:
+        return {
+            "count": 0,
+            "win_rate": None,
+            "avg": None,
+            "median": None,
+            "best": None,
+            "worst": None,
+        }
+
+    win_rate = float((s > 0).mean() * 100.0)
+    return {
+        "count": int(len(s)),
+        "win_rate": win_rate,
+        "avg": float(s.mean()),
+        "median": float(s.median()),
+        "best": float(s.max()),
+        "worst": float(s.min()),
+    }
+
+
+def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -> tuple[pd.DataFrame, dict]:
     """
     Maintains docs/history/picks.csv (ledger of picks)
-    Returns df_perf with columns:
-      scan_date, symbol, entry_close, Now, 15d, 30d, ...
+    Returns:
+      (df_perf, summary_stats)
+
+    df_perf columns:
+      scan_date, days_since_scan, symbol, entry_close, Now, 15d, 30d, 60d, 100d, 200d
     """
     hist_dir = out_dir / "history"
     hist_dir.mkdir(parents=True, exist_ok=True)
 
     picks_path = hist_dir / "picks.csv"
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = _today_ny_str()
 
     if today_df is None:
         today_df = pd.DataFrame()
@@ -332,7 +391,8 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
     df_picks.to_csv(picks_path, index=False)
 
     if df_picks.empty:
-        return pd.DataFrame(columns=["scan_date", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS])
+        empty_cols = ["scan_date", "days_since_scan", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS]
+        return pd.DataFrame(columns=empty_cols), _compute_summary_stats(pd.Series(dtype=float))
 
     # Fetch close series for symbols in picks (cached)
     symbols = sorted(set(df_picks["symbol"].astype(str).tolist()))
@@ -347,6 +407,8 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
             pass
 
     perf_rows = []
+    today_ny_date = _now_ny().date()
+
     for _, r in df_picks.iterrows():
         scan_date = str(r["scan_date"])
         sym = str(r["symbol"])
@@ -355,7 +417,21 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
         entry_date = pd.Timestamp(scan_date)
         close = close_cache.get(sym)
 
-        row_out = {"scan_date": scan_date, "symbol": sym, "entry_close": entry_close}
+        # days_since_scan
+        try:
+            scan_dt = pd.to_datetime(scan_date).date()
+            days_since = int((today_ny_date - scan_dt).days)
+            if days_since < 0:
+                days_since = 0
+        except Exception:
+            days_since = None
+
+        row_out = {
+            "scan_date": scan_date,
+            "days_since_scan": days_since,
+            "symbol": sym,
+            "entry_close": entry_close,
+        }
 
         latest_ret = None
         if close is not None and not close.empty:
@@ -371,19 +447,48 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
 
         perf_rows.append(row_out)
 
-    df_perf = pd.DataFrame(perf_rows)
-    if df_perf.empty:
-        return pd.DataFrame(columns=["scan_date", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS])
+    df_perf_raw = pd.DataFrame(perf_rows)
+    if df_perf_raw.empty:
+        empty_cols = ["scan_date", "days_since_scan", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS]
+        return pd.DataFrame(columns=empty_cols), _compute_summary_stats(pd.Series(dtype=float))
 
-    df_perf["ret_now_str"] = df_perf["ret_now"].apply(_pct_str)
+    summary = _compute_summary_stats(df_perf_raw["ret_now"])
+
+    # Convert to display strings
+    df_perf_raw["Now"] = df_perf_raw["ret_now"].apply(_pct_str)
     for n in HORIZONS:
-        df_perf[f"ret_{n}d_str"] = df_perf[f"ret_{n}d"].apply(_pct_str)
+        df_perf_raw[f"{n}d"] = df_perf_raw[f"ret_{n}d"].apply(_pct_str)
 
-    col_order = ["scan_date", "symbol", "entry_close", "ret_now_str"] + [f"ret_{n}d_str" for n in HORIZONS]
-    df_perf = df_perf[col_order].rename(
-        columns={"ret_now_str": "Now", **{f"ret_{n}d_str": f"{n}d" for n in HORIZONS}}
-    )
-    return df_perf
+    col_order = ["scan_date", "days_since_scan", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS]
+    df_perf = df_perf_raw[col_order].copy()
+
+    return df_perf, summary
+
+
+def _summary_html(summary: dict) -> str:
+    """
+    Render a compact stats bar (Cosmetic #4).
+    """
+    if not summary or summary.get("count", 0) == 0:
+        return """<div class="stats">No performance stats yet.</div>"""
+
+    win = _pct_str(summary["win_rate"]) if summary.get("win_rate") is not None else "—"
+    avg = _pct_str(summary["avg"]) if summary.get("avg") is not None else "—"
+    med = _pct_str(summary["median"]) if summary.get("median") is not None else "—"
+    best = _pct_str(summary["best"]) if summary.get("best") is not None else "—"
+    worst = _pct_str(summary["worst"]) if summary.get("worst") is not None else "—"
+
+    # _pct_str expects "percent points" already; win_rate is already %
+    # but _pct_str adds % and + sign; that's fine (e.g. +58.2%)
+    return f"""
+    <div class="stats">
+      <span class="stat"><b>Rows with Now:</b> {summary["count"]}</span>
+      <span class="stat"><b>Win rate (Now &gt; 0):</b> {win}</span>
+      <span class="stat"><b>Avg Now:</b> {avg}</span>
+      <span class="stat"><b>Median Now:</b> {med}</span>
+      <span class="stat"><b>Best / Worst Now:</b> {best} / {worst}</span>
+    </div>
+    """
 
 
 # -----------------------------
@@ -397,9 +502,12 @@ def write_site(today_df: pd.DataFrame) -> None:
         today_df = pd.DataFrame()
 
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    df_perf = update_history_and_build_perf_table(today_df, out_dir)
+    # NY timestamp for the site
+    generated_at = _generated_at_ny_str()
+
+    df_perf, summary = update_history_and_build_perf_table(today_df, out_dir)
+    summary_block = _summary_html(summary)
 
     # Today's table HTML
     if today_df.empty:
@@ -428,7 +536,7 @@ def write_site(today_df: pd.DataFrame) -> None:
         color: #e2e8f0;
       }
       a { color: #38bdf8; }
-      .muted { color: #94a3b8; margin-bottom: 18px; }
+      .muted { color: #94a3b8; margin-bottom: 12px; }
       table.dataTable { background-color: #1e293b; color: #e2e8f0; }
       table.dataTable thead { background-color: #334155; }
       .dataTables_wrapper .dataTables_length,
@@ -443,9 +551,11 @@ def write_site(today_df: pd.DataFrame) -> None:
         background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
         border-radius: 6px; padding: 4px 6px; outline: none;
       }
+
       .pos { color: #22c55e !important; font-weight: 700; }
       .neg { color: #ef4444 !important; font-weight: 700; }
       .neu { color: #94a3b8 !important; font-weight: 600; }
+
       .toolbar {
         display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
         margin: 10px 0 16px 0;
@@ -455,6 +565,22 @@ def write_site(today_df: pd.DataFrame) -> None:
         border-radius: 8px; padding: 6px 10px; outline: none;
       }
       .toolbar label { color: #cbd5e1; }
+
+      .stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+        background: #0b1220;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin: 10px 0 18px;
+        color: #cbd5e1;
+      }
+      .stats .stat {
+        padding: 2px 0;
+      }
     </style>
     """
 
@@ -465,7 +591,12 @@ def write_site(today_df: pd.DataFrame) -> None:
         const s = String(x).replace(/[%,$]/g, "").trim();
         if (s === "" || s === "—") return null;
         const n = Number(s);
-        return Number.isFinite(n) ? n : null;
+        if (!Number.isFinite(n)) return null;
+        // kill "-0"
+        if (Object.is(n, -0)) return 0;
+        // kill tiny noise
+        if (Math.abs(n) < 0.05) return 0;
+        return n;
       }
 
       function colorizeTable(tableSelector) {
@@ -508,6 +639,8 @@ def write_site(today_df: pd.DataFrame) -> None:
 <body>
   <h1>📈 Stage 2 History & Performance</h1>
   <div class="muted">Updated: <b>{generated_at}</b> · Returns are <b>trading days</b>.</div>
+
+  {summary_block}
 
   <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
 
@@ -588,6 +721,8 @@ def write_site(today_df: pd.DataFrame) -> None:
 
   <h1>📊 Stage 2 Screener</h1>
   <div class="muted">Last updated: <b>{generated_at}</b></div>
+
+  {summary_block}
 
   <p>
     <a href="stage2_candidates.csv">Download today’s CSV</a>
@@ -762,7 +897,6 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
             return metrics
         return None
 
-    # Only evaluate symbols we have data for (still basically the whole universe)
     with ThreadPoolExecutor(max_workers=max_workers) as ex:
         futures = {ex.submit(worker, s): s for s in symbols}
         for fut in tqdm(as_completed(futures), total=len(futures), desc="Scanning"):
