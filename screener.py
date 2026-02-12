@@ -8,7 +8,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
-
 HORIZONS = [15, 30, 60, 100, 200]  # trading days
 
 
@@ -16,16 +15,19 @@ HORIZONS = [15, 30, 60, 100, 200]  # trading days
 # Performance / history helpers
 # -----------------------------
 def _pct_str(x: float | None) -> str:
-    if x is None or (isinstance(x, float) and (np.isnan(x) or np.isinf(x))):
+    if x is None:
         return "—"
+    try:
+        if np.isnan(x) or np.isinf(x):
+            return "—"
+    except Exception:
+        pass
     sign = "+" if x >= 0 else ""
     return f"{sign}{x:.1f}%"
 
 
 def _get_close_series(symbol: str, years: int = 6) -> pd.Series | None:
-    """
-    Returns daily close series with DateTimeIndex (UTC naive), sorted.
-    """
+    """Daily close series, sorted by date."""
     try:
         data = yf.download(
             symbol,
@@ -38,7 +40,7 @@ def _get_close_series(symbol: str, years: int = 6) -> pd.Series | None:
         if data is None or data.empty:
             return None
 
-        # Handle possible MultiIndex columns
+        # Handle MultiIndex columns from yfinance
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = [c[0] for c in data.columns]
 
@@ -49,23 +51,20 @@ def _get_close_series(symbol: str, years: int = 6) -> pd.Series | None:
         if s.empty:
             return None
 
-        # Ensure sorted index
-        s = s.sort_index()
-        return s
+        return s.sort_index()
     except Exception:
         return None
 
 
 def _forward_return_trading_days(close: pd.Series, entry_date: pd.Timestamp, entry_close: float, n: int) -> float | None:
     """
-    Compute forward return after n trading sessions.
-    We find the first close date >= entry_date, then jump +n rows.
+    Forward return after n trading sessions.
+    Find first close date >= entry_date, then jump +n rows.
     """
     if close is None or close.empty:
         return None
 
     idx = close.index
-    # Find first trading date >= entry_date
     pos = idx.searchsorted(entry_date)
     if pos >= len(idx):
         return None
@@ -80,29 +79,26 @@ def _forward_return_trading_days(close: pd.Series, entry_date: pd.Timestamp, ent
 
 def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -> pd.DataFrame:
     """
-    Maintains docs/history/picks.csv
-    and returns a dataframe of ALL historical picks with performance columns.
+    Maintains docs/history/picks.csv (ledger of picks)
+    Returns df_perf with columns:
+      scan_date, symbol, entry_close, Now, 15d, 30d, ...
     """
     hist_dir = out_dir / "history"
     hist_dir.mkdir(parents=True, exist_ok=True)
 
     picks_path = hist_dir / "picks.csv"
-
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    today_ts = pd.Timestamp(today)
 
-    # Normalize today_df
     if today_df is None:
         today_df = pd.DataFrame()
 
-    # Create new picks rows for today
+    # Build today's new rows
     new_rows = []
     if not today_df.empty and "symbol" in today_df.columns and "close" in today_df.columns:
         for _, row in today_df.iterrows():
             sym = str(row["symbol"])
             entry_close = float(row["close"])
             new_rows.append({"scan_date": today, "symbol": sym, "entry_close": entry_close})
-
     df_new = pd.DataFrame(new_rows)
 
     # Load existing picks
@@ -111,13 +107,13 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
     else:
         df_picks = pd.DataFrame(columns=["scan_date", "symbol", "entry_close"])
 
-    # Append only truly new (scan_date, symbol) combos
+    # Append only new (scan_date, symbol)
     if not df_new.empty:
         df_picks["scan_date"] = df_picks["scan_date"].astype(str)
         df_picks["symbol"] = df_picks["symbol"].astype(str)
 
-        key_existing = set(zip(df_picks["scan_date"], df_picks["symbol"]))
-        df_new = df_new[~df_new.apply(lambda r: (r["scan_date"], r["symbol"]) in key_existing, axis=1)]
+        existing = set(zip(df_picks["scan_date"], df_picks["symbol"]))
+        df_new = df_new[~df_new.apply(lambda r: (r["scan_date"], r["symbol"]) in existing, axis=1)]
 
         if not df_new.empty:
             df_picks = pd.concat([df_picks, df_new], ignore_index=True)
@@ -127,11 +123,10 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
         df_picks["scan_date"] = df_picks["scan_date"].astype(str)
         df_picks = df_picks.sort_values(["scan_date", "symbol"], ascending=[False, True]).reset_index(drop=True)
 
-    # Save updated picks ledger
+    # Save ledger
     df_picks.to_csv(picks_path, index=False)
 
-    # Compute performance columns
-    # Cache close series per symbol (huge speed-up)
+    # --- Compute performance for every pick ---
     close_cache: dict[str, pd.Series | None] = {}
 
     def get_close(sym: str) -> pd.Series | None:
@@ -149,20 +144,39 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
         close = get_close(sym)
 
         row_out = {"scan_date": scan_date, "symbol": sym, "entry_close": entry_close}
+
+        # NOW return (latest close vs entry close)
+        latest_ret = None
+        if close is not None and not close.empty:
+            try:
+                latest_close = float(close.iloc[-1])
+                latest_ret = (latest_close / entry_close - 1.0) * 100.0
+            except Exception:
+                latest_ret = None
+        row_out["ret_now"] = latest_ret
+
+        # Forward returns
         for n in HORIZONS:
-            val = _forward_return_trading_days(close, entry_date, entry_close, n)
-            row_out[f"ret_{n}d"] = val
+            row_out[f"ret_{n}d"] = _forward_return_trading_days(close, entry_date, entry_close, n)
+
         perf_rows.append(row_out)
 
     df_perf = pd.DataFrame(perf_rows)
 
-    # Pretty display strings (keep numeric too if you want later)
+    # If empty, return empty in expected shape
+    if df_perf.empty:
+        return pd.DataFrame(columns=["scan_date", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS])
+
+    # Pretty strings
+    df_perf["ret_now_str"] = df_perf["ret_now"].apply(_pct_str)
     for n in HORIZONS:
         df_perf[f"ret_{n}d_str"] = df_perf[f"ret_{n}d"].apply(_pct_str)
 
-    # Put columns in nice order
-    col_order = ["scan_date", "symbol", "entry_close"] + [f"ret_{n}d_str" for n in HORIZONS]
-    df_perf = df_perf[col_order].rename(columns={f"ret_{n}d_str": f"{n}d" for n in HORIZONS})
+    # Final column order + names (THIS is what makes "Now" appear)
+    col_order = ["scan_date", "symbol", "entry_close", "ret_now_str"] + [f"ret_{n}d_str" for n in HORIZONS]
+    df_perf = df_perf[col_order].rename(
+        columns={"ret_now_str": "Now", **{f"ret_{n}d_str": f"{n}d" for n in HORIZONS}}
+    )
 
     return df_perf
 
@@ -174,21 +188,21 @@ def write_site(today_df: pd.DataFrame) -> None:
     out_dir = Path("docs")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save today's CSV to docs/
     if today_df is None:
         today_df = pd.DataFrame()
+
+    # Save today's CSV
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    # Build history/performance table (all-time picks)
+    # Build performance table (history page)
     df_perf = update_history_and_build_perf_table(today_df, out_dir)
 
     # Today's table HTML
     if today_df.empty:
         today_table_html = "<p>No Stage 2 matches found today.</p>"
     else:
-        # Put symbol first
         if "symbol" in today_df.columns:
             cols = ["symbol"] + [c for c in today_df.columns if c != "symbol"]
             today_df = today_df[cols]
@@ -196,14 +210,14 @@ def write_site(today_df: pd.DataFrame) -> None:
         today_table_html = today_df.head(500).to_html(index=False, escape=True)
         today_table_html = today_table_html.replace("<table", '<table id="todayTable" class="display"', 1)
 
-    # History/perf table HTML
+    # History table HTML (this WILL include the "Now" column)
     if df_perf.empty:
         hist_table_html = "<p>No historical picks yet.</p>"
     else:
         hist_table_html = df_perf.head(2000).to_html(index=False, escape=True)
         hist_table_html = hist_table_html.replace("<table", '<table id="histTable" class="display"', 1)
 
-    # Write a dedicated history page
+    # History page
     history_html = f"""<!doctype html>
 <html>
 <head>
@@ -242,7 +256,7 @@ def write_site(today_df: pd.DataFrame) -> None:
 </head>
 <body>
   <h1>📈 Stage 2 History & Performance</h1>
-  <div class="muted">Updated: <b>{generated_at}</b> · Returns are in <b>trading days</b>.</div>
+  <div class="muted">Updated: <b>{generated_at}</b> · Returns are <b>trading days</b>.</div>
 
   <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
 
@@ -354,8 +368,7 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
         return pd.read_csv(io.StringIO(text), sep="|")
 
     nasdaq = load_table(urls["nasdaqlisted"])
-    other = load_table(urls["otherlisted"])
-    other = other.rename(columns={"ACT Symbol": "Symbol"})
+    other = load_table(urls["otherlisted"]).rename(columns={"ACT Symbol": "Symbol"})
 
     def clean(df: pd.DataFrame) -> pd.DataFrame:
         df = df.copy()
@@ -371,8 +384,7 @@ def fetch_us_ticker_universe_ex_etf() -> list[str]:
     other = clean(other)
 
     symbols = sorted(set(nasdaq["Symbol"].tolist()) | set(other["Symbol"].tolist()))
-    symbols = [s.replace(".", "-") for s in symbols]  # Yahoo format BRK.B -> BRK-B
-    return symbols
+    return [s.replace(".", "-") for s in symbols]  # Yahoo format BRK.B -> BRK-B
 
 
 # -----------------------------
@@ -384,8 +396,7 @@ def _slope(series: pd.Series, window: int = 20) -> float:
         return float("nan")
     y = s.iloc[-window:].to_numpy(dtype=float)
     x = np.arange(window, dtype=float)
-    m = np.polyfit(x, y, 1)[0]
-    return float(m)
+    return float(np.polyfit(x, y, 1)[0])
 
 
 def stage2_check(df: pd.DataFrame) -> tuple[bool, dict]:
@@ -407,8 +418,6 @@ def stage2_check(df: pd.DataFrame) -> tuple[bool, dict]:
     cond_price = close.loc[last] > sma50.loc[last] and close.loc[last] > sma150.loc[last]
 
     lookback = 65
-    if len(close) < lookback + 2:
-        return False, {}
     prior_high = close.iloc[-(lookback + 1):-1].max()
     cond_breakout = close.loc[last] > prior_high
 
@@ -418,7 +427,7 @@ def stage2_check(df: pd.DataFrame) -> tuple[bool, dict]:
     passed = all([cond_ma, cond_slope, cond_price, cond_breakout, cond_vol, cond_not_extended])
 
     metrics = {
-        "symbol": None,  # set later
+        "symbol": None,
         "close": float(close.loc[last]),
         "sma50": float(sma50.loc[last]),
         "sma150": float(sma150.loc[last]),
@@ -440,7 +449,7 @@ def fetch_ohlcv_yahoo(symbol: str, period: str = "2y") -> pd.DataFrame | None:
             interval="1d",
             auto_adjust=False,
             progress=False,
-            threads=False
+            threads=False,
         )
         if data is None or data.empty:
             return None
@@ -448,18 +457,22 @@ def fetch_ohlcv_yahoo(symbol: str, period: str = "2y") -> pd.DataFrame | None:
         if isinstance(data.columns, pd.MultiIndex):
             data.columns = [c[0] for c in data.columns]
 
-        data = data.rename(columns={
-            "Open": "open", "High": "high", "Low": "low",
-            "Close": "close", "Adj Close": "adj_close", "Volume": "volume"
-        })
+        data = data.rename(
+            columns={
+                "Open": "open",
+                "High": "high",
+                "Low": "low",
+                "Close": "close",
+                "Adj Close": "adj_close",
+                "Volume": "volume",
+            }
+        )
 
         needed = {"open", "high", "low", "close", "volume"}
         if not needed.issubset(set(data.columns)):
             return None
 
-        data = data.dropna(subset=["close", "volume"])
-        return data
-
+        return data.dropna(subset=["close", "volume"])
     except Exception:
         return None
 
