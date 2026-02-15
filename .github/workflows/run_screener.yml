@@ -45,12 +45,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # In case main advanced since checkout, rebase before committing
-          git pull --rebase origin main || true
+          # Make sure we're on main and up to date BEFORE generating changes
+          git checkout main
+          git fetch origin main
+          git reset --hard origin/main
 
+          # Stage generated site output
           git add docs/ || true
-          git commit -m "Update screener output" || echo "No changes to commit"
 
-          # Rebase again just in case, then push
-          git pull --rebase origin main || true
-          git push
+          # Commit only if there are changes
+          git diff --cached --quiet && echo "No changes to commit" || git commit -m "Update screener output"
+
+          # Push (no pull/rebase)
+          git push origin main
