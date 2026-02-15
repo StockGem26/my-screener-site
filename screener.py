@@ -35,7 +35,7 @@ def _today_ny_str() -> str:
 
 
 def _generated_at_ny_str() -> str:
-    # Cosmetic #1: nicer timestamp format
+    # Cosmetic: nicer timestamp format
     return _now_ny().strftime("%b %d, %Y · %I:%M %p ET")
 
 
@@ -58,7 +58,7 @@ def _is_cache_fresh(last_dt: pd.Timestamp | None) -> bool:
 # -----------------------------
 def _pct_str(x: float | None) -> str:
     """
-    Cosmetic #2: clean +x.x% formatting and kills "-0.0%".
+    Clean +x.x% formatting and kills "-0.0%".
     Treat tiny values as 0.0 to avoid negative zero.
     """
     if x is None:
@@ -316,7 +316,7 @@ def _forward_return_trading_days(close: pd.Series, entry_date: pd.Timestamp, ent
 
 def _compute_summary_stats(ret_series: pd.Series) -> dict:
     """
-    Cosmetic #4: win-rate summary bar stats.
+    Win-rate summary bar stats.
     Uses ret_now numeric series (percent).
     """
     s = pd.to_numeric(ret_series, errors="coerce").dropna()
@@ -462,12 +462,12 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
     col_order = ["scan_date", "days_since_scan", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS]
     df_perf = df_perf_raw[col_order].copy()
 
-    return df_perf
+    return df_perf, summary
 
 
 def _summary_html(summary: dict) -> str:
     """
-    Render a compact stats bar (Cosmetic #4).
+    Render a compact stats bar.
     """
     if not summary or summary.get("count", 0) == 0:
         return """<div class="stats">No performance stats yet.</div>"""
@@ -478,8 +478,6 @@ def _summary_html(summary: dict) -> str:
     best = _pct_str(summary["best"]) if summary.get("best") is not None else "—"
     worst = _pct_str(summary["worst"]) if summary.get("worst") is not None else "—"
 
-    # _pct_str expects "percent points" already; win_rate is already %
-    # but _pct_str adds % and + sign; that's fine (e.g. +58.2%)
     return f"""
     <div class="stats">
       <span class="stat"><b>Rows with Now:</b> {summary["count"]}</span>
@@ -504,10 +502,8 @@ def write_site(today_df: pd.DataFrame) -> None:
     # Save today's CSV (raw)
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
-    generated_at = datetime.now(ZoneInfo("America/New_York")).strftime("%b %d, %I:%M %p ET")
-
     # Build performance table (history page)
-    df_perf = update_history_and_build_perf_table(today_df, out_dir)
+    df_perf, summary = update_history_and_build_perf_table(today_df, out_dir)
 
     # -----------------------------
     # MAIN PAGE: simplify + format
@@ -515,7 +511,7 @@ def write_site(today_df: pd.DataFrame) -> None:
     today_view = today_df.copy()
 
     if not today_view.empty:
-        # Keep only selected columns (you asked to remove sma50/sma150/sma200/prior_65d_high_close/sma200_slope20)
+        # Keep only selected columns
         keep_cols = [
             "symbol",
             "close",
@@ -597,25 +593,20 @@ def write_site(today_df: pd.DataFrame) -> None:
     else:
         # Make history table nicer headers too
         dfh = df_perf.copy()
-        def _ordinal(n: int) -> str:
-            if 10 <= n % 100 <= 20:
-                suf = "th"
-            else:
-                suf = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
-            return f"{n}{suf}"
 
+        # ✅ Scan Date as "Feb 4" (no year)
         dt = pd.to_datetime(dfh["scan_date"], errors="coerce")
-        dfh["scan_date"] = dt.apply(
-            lambda d: f"{d.strftime('%B')} {_ordinal(d.day)}" if pd.notna(d) else ""
-        )
-        
+        dfh["scan_date"] = dt.apply(lambda d: f"{d.strftime('%b')} {d.day}" if pd.notna(d) else "")
+
         dfh = dfh.rename(columns={
             "scan_date": "Scan Date",
+            "days_since_scan": "Days Since",
             "symbol": "Symbol",
             "entry_close": "Entry",
             "Now": "Now",
             **{f"{n}d": f"{n}D" for n in HORIZONS},
         })
+
         hist_table_html = dfh.head(5000).to_html(index=False, escape=True)
         hist_table_html = hist_table_html.replace("<table", '<table id="histTable" class="table"', 1)
 
@@ -882,7 +873,6 @@ def write_site(today_df: pd.DataFrame) -> None:
   </style>
     """
 
-    # JS: date dropdown + color ONLY % columns (history)
     shared_js = r"""
   <script>
     function isPercentLike(txt){
@@ -989,37 +979,39 @@ def write_site(today_df: pd.DataFrame) -> None:
             else table.column(dateIdx).search("^" + v + "$", true, false).draw();
           }});
 
-        // Color ONLY return columns: Now, 15D, 30D, 60D, 100D, 200D
-        function colorizeReturnColumns() {{
-        // Columns: 0 Scan Date, 1 Symbol, 2 Entry, 3 Now, 4.. = forward returns
-        const startIdx = 3;
+          // ✅ Color ONLY the "Now" column (and nothing else)
+          function colorizeNowOnly() {{
+            let nowIdx = null;
+            $("#histTable thead th").each(function (i) {{
+              const t = $(this).text().trim().toLowerCase();
+              if (t === "now") nowIdx = i;
+            }});
+            if (nowIdx === null) return;
 
-        $("#histTable tbody tr").each(function () {{
-            const tds = $(this).find("td");
+            $("#histTable tbody tr").each(function () {{
+              const tds = $(this).find("td");
+              const cell = $(tds[nowIdx]);
+              if (!cell || cell.length === 0) return;
 
-            for (let i = startIdx; i < tds.length; i++) {{
-            const cell = $(tds[i]);
-            const txt = cell.text().trim();
+              const txt = cell.text().trim();
+              cell.css("font-weight", "800");
 
-            if (!txt || txt === "—") {{
+              if (!txt || txt === "—") {{
                 cell.css("color", "var(--muted)");
-                continue;
-            }}
+                return;
+              }}
 
-            const n = Number(txt.replace("%", "").replace("+", ""));
-            if (!Number.isFinite(n)) continue;
+              const n = Number(txt.replace("%", "").replace("+", ""));
+              if (!Number.isFinite(n)) return;
 
-            cell.css("font-weight", "800");
+              if (n > 0) cell.css("color", "var(--pos)");
+              else if (n < 0) cell.css("color", "var(--neg)");
+              else cell.css("color", "var(--muted)");
+            }});
+          }}
 
-            if (n > 0) cell.css("color", "var(--pos)");
-            else if (n < 0) cell.css("color", "var(--neg)");
-            else cell.css("color", "var(--muted)");
-            }}
-        }});
-        }}
-
-        colorizeReturnColumns();
-        table.on("draw", function () {{ colorizeReturnColumns(); }});
+          colorizeNowOnly();
+          table.on("draw", function () {{ colorizeNowOnly(); }});
         }}
       }} catch (e) {{
         console.warn("History init failed.", e);
