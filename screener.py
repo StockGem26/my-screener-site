@@ -597,8 +597,18 @@ def write_site(today_df: pd.DataFrame) -> None:
     else:
         # Make history table nicer headers too
         dfh = df_perf.copy()
+        def _ordinal(n: int) -> str:
+            if 10 <= n % 100 <= 20:
+                suf = "th"
+            else:
+                suf = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+            return f"{n}{suf}"
+
         dt = pd.to_datetime(dfh["scan_date"], errors="coerce")
-        dfh["scan_date"] = dt.dt.strftime("%b %d").str.replace(" 0", " ", regex=False)
+        dfh["scan_date"] = dt.apply(
+            lambda d: f"{d.strftime('%B')} {_ordinal(d.day)}" if pd.notna(d) else ""
+        )
+        
         dfh = dfh.rename(columns={
             "scan_date": "Scan Date",
             "symbol": "Symbol",
@@ -807,10 +817,19 @@ def write_site(today_df: pd.DataFrame) -> None:
       border-bottom: 1px solid var(--border) !important;
       padding: 12px 12px !important;
     }
-    table.table tbody td{
+    /* Keep Today table neutral (no red/green) */
+    #todayTable tbody td{
       padding: 12px 12px !important;
       border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text) !important; /* MAIN PAGE neutral */
+      color: var(--text) !important;
+      font-weight:600;
+    }
+
+    /* Allow History table colors to be set by JS (no !important on color) */
+    #histTable tbody td{
+      padding: 12px 12px !important;
+      border-bottom: 1px solid rgba(15,23,42,.06) !important;
+      color: var(--text);
       font-weight:600;
     }
     table.table tbody tr:hover td{
@@ -912,7 +931,7 @@ def write_site(today_df: pd.DataFrame) -> None:
       <p>
         Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
       </p>
-      <div class="meta">Updated: <b>{generated_at}</b></div>
+      <div class="meta">Updated: <b>{_generated_at_ny_str()}</b></div>
       <div class="chips">
         <div class="chip">Daily after close</div>
         <div class="chip">Timestamped picks</div>
@@ -1042,7 +1061,7 @@ def write_site(today_df: pd.DataFrame) -> None:
         A beautiful, public performance ledger that tracks breakout picks forward in trading days.
         Every scan is timestamped. Every result updates automatically.
       </p>
-      <div class="meta">Last updated: <b>{generated_at}</b></div>
+      <div class="meta">Last updated: <b>{_generated_at_ny_str()}</b></div>
 
       <div class="chips">
         <div class="chip">After-close updates</div>
