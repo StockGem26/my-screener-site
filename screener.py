@@ -504,7 +504,7 @@ def write_site(today_df: pd.DataFrame) -> None:
     # Save today's CSV (raw)
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
-generated_at = datetime.now(ZoneInfo("America/New_York")).strftime("%b %d, %I:%M %p ET")
+    generated_at = datetime.now(ZoneInfo("America/New_York")).strftime("%b %d, %I:%M %p ET")
 
     # Build performance table (history page)
     df_perf = update_history_and_build_perf_table(today_df, out_dir)
