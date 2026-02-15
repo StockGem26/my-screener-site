@@ -504,7 +504,7 @@ def write_site(today_df: pd.DataFrame) -> None:
     # Save today's CSV (raw)
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+generated_at = datetime.now(ZoneInfo("America/New_York")).strftime("%b %d, %I:%M %p ET")
 
     # Build performance table (history page)
     df_perf = update_history_and_build_perf_table(today_df, out_dir)
@@ -597,6 +597,8 @@ def write_site(today_df: pd.DataFrame) -> None:
     else:
         # Make history table nicer headers too
         dfh = df_perf.copy()
+        dt = pd.to_datetime(dfh["scan_date"], errors="coerce")
+        dfh["scan_date"] = dt.dt.strftime("%b %d").str.replace(" 0", " ", regex=False)
         dfh = dfh.rename(columns={
             "scan_date": "Scan Date",
             "symbol": "Symbol",
@@ -970,42 +972,30 @@ def write_site(today_df: pd.DataFrame) -> None:
 
         // Color ONLY return columns: Now, 15D, 30D, 60D, 100D, 200D
         function colorizeReturnColumns() {{
-        const headers = [];
-        $("#histTable thead th").each(function () {{
-            headers.push($(this).text().trim().toUpperCase());
-        }});
-
-        const wanted = new Set(["NOW", "15D", "30D", "60D", "100D", "200D"]);
-        const idxs = [];
-
-        headers.forEach((h, i) => {{
-            const key = h.replace(/\s+/g, "");
-            if (wanted.has(key)) idxs.push(i);
-        }});
-
-        if (!idxs.length) return;
+        // Columns: 0 Scan Date, 1 Symbol, 2 Entry, 3 Now, 4.. = forward returns
+        const startIdx = 3;
 
         $("#histTable tbody tr").each(function () {{
             const tds = $(this).find("td");
 
-            idxs.forEach((i) => {{
+            for (let i = startIdx; i < tds.length; i++) {{
             const cell = $(tds[i]);
             const txt = cell.text().trim();
 
             if (!txt || txt === "—") {{
                 cell.css("color", "var(--muted)");
-                return;
+                continue;
             }}
 
             const n = Number(txt.replace("%", "").replace("+", ""));
-            if (!Number.isFinite(n)) return;
+            if (!Number.isFinite(n)) continue;
 
             cell.css("font-weight", "800");
 
             if (n > 0) cell.css("color", "var(--pos)");
             else if (n < 0) cell.css("color", "var(--neg)");
             else cell.css("color", "var(--muted)");
-            }});
+            }}
         }});
         }}
 
