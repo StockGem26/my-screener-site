@@ -3,102 +3,310 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Stage 2 History & Performance</title>
+  <title>Performance Ledger</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 30px;
-        background-color: #0f172a;
-        color: #e2e8f0;
-      }
-      a { color: #38bdf8; }
-      .muted { color: #94a3b8; margin-bottom: 12px; }
-      table.dataTable { background-color: #1e293b; color: #e2e8f0; }
-      table.dataTable thead { background-color: #334155; }
-      .dataTables_wrapper .dataTables_length,
-      .dataTables_wrapper .dataTables_filter,
-      .dataTables_wrapper .dataTables_info,
-      .dataTables_wrapper .dataTables_processing,
-      .dataTables_wrapper .dataTables_paginate {
-        color: #e2e8f0 !important;
-      }
-      .dataTables_wrapper .dataTables_filter input,
-      .dataTables_wrapper .dataTables_length select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 6px; padding: 4px 6px; outline: none;
-      }
+  <style>
+    :root{
+      --bg0:#f8fafc;
+      --bg1:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border: rgba(15,23,42,.08);
+      --shadow: 0 18px 60px rgba(2,6,23,.10);
+      --shadow2: 0 8px 24px rgba(2,6,23,.08);
+      --radius: 22px;
+      --accent: #2563eb;
+      --accent2:#7c3aed;
+      --pos:#16a34a;
+      --neg:#dc2626;
+    }
 
-      .toolbar {
-        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-        margin: 10px 0 16px 0;
-      }
-      .toolbar select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 8px; padding: 6px 10px; outline: none;
-      }
-      .toolbar label { color: #cbd5e1; }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% 0%, rgba(37,99,235,.12), transparent 55%),
+        radial-gradient(900px 500px at 85% 10%, rgba(124,58,237,.12), transparent 55%),
+        linear-gradient(to bottom, var(--bg0), var(--bg0));
+    }
 
-      .stats {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-        background: #0b1220;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 10px 12px;
-        margin: 10px 0 18px;
-        color: #cbd5e1;
-      }
-      .stats .stat {
-        padding: 2px 0;
-      }
-    </style>
+    .container{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      box-shadow: var(--shadow2);
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .nav a{
+      color: var(--muted);
+      text-decoration:none;
+      font-weight:600;
+      margin-left: 14px;
+      transition: 200ms ease;
+    }
+    .nav a:hover{ color: var(--text); }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      color: var(--text);
+      font-weight:700;
+      text-decoration:none;
+      box-shadow: var(--shadow2);
+      transition: 220ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn.primary{
+      border: none;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    .hero{
+      margin-top: 22px;
+      padding: 42px 28px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.80);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero h1{
+      margin:0 0 10px 0;
+      font-size: clamp(32px, 4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 70ch;
+    }
+
+    .meta{
+      margin-top: 14px;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    .chips{
+      margin-top: 18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.70);
+      color: var(--muted);
+      font-weight:700;
+      font-size: 12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card{
+      grid-column: span 12;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow2);
+    }
+    @media (min-width: 900px){
+      .card.half{ grid-column: span 6; }
+    }
+
+    .card-title{
+      font-weight:800;
+      letter-spacing:-0.02em;
+      margin:0 0 8px 0;
+    }
+    .card-sub{
+      margin:0 0 12px 0;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    /* DataTables restyle */
+    table.table{
+      width:100%;
+      border-collapse: separate !important;
+      border-spacing: 0;
+      overflow:hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+    }
+    table.table thead th{
+      background: rgba(248,250,252,.9) !important;
+      color: var(--muted) !important;
+      font-weight:800 !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 12px 12px !important;
+    }
+    table.table tbody td{
+      padding: 12px 12px !important;
+      border-bottom: 1px solid rgba(15,23,42,.06) !important;
+      color: var(--text) !important; /* MAIN PAGE neutral */
+      font-weight:600;
+    }
+    table.table tbody tr:hover td{
+      background: rgba(37,99,235,.06) !important;
+      transition: 180ms ease;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter label,
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate{
+      color: var(--muted) !important;
+      font-weight:600;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin: 10px 0 16px 0;
+    }
+    .toolbar select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline:none;
+      font-weight:700;
+      color: var(--text);
+    }
+
+    /* Empty states */
+    .empty-state{
+      padding: 22px;
+      border: 1px dashed rgba(15,23,42,.18);
+      border-radius: 16px;
+      background: rgba(248,250,252,.8);
+    }
+    .empty-title{ font-weight:900; letter-spacing:-0.02em; margin-bottom: 4px; }
+    .empty-sub{ color: var(--muted); font-weight:600; }
+  </style>
     
 </head>
 <body>
-  <h1>📈 Stage 2 History & Performance</h1>
-  <div class="muted">Updated: <b>Feb 15, 2026 · 02:40 PM ET</b> · Returns are <b>trading days</b>.</div>
+  <div class="container">
 
-  
-    <div class="stats">
-      <span class="stat"><b>Rows with Now:</b> 129</span>
-      <span class="stat"><b>Win rate (Now &gt; 0):</b> +27.1%</span>
-      <span class="stat"><b>Avg Now:</b> -3.0%</span>
-      <span class="stat"><b>Median Now:</b> -0.1%</span>
-      <span class="stat"><b>Best / Worst Now:</b> +5.0% / -89.2%</span>
+    <div class="nav">
+      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div>
+        <a href="../index.html">Today</a>
+        <a href="index.html">Performance</a>
+        <a href="picks.csv">Download CSV</a>
+      </div>
+      <a class="btn primary" href="../index.html">View today</a>
     </div>
-    
 
-  <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
+    <div class="hero">
+      <h1>Performance Ledger</h1>
+      <p>
+        Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
+      </p>
+      <div class="meta">Updated: <b>2026-02-15 20:43 UTC</b></div>
+      <div class="chips">
+        <div class="chip">Daily after close</div>
+        <div class="chip">Timestamped picks</div>
+        <div class="chip">Forward returns</div>
+        <div class="chip">Downloadable CSV</div>
+      </div>
+    </div>
 
-  <div class="toolbar">
-    <label for="dateFilter"><b>Pick date:</b></label>
-    <select id="dateFilter">
-      <option value="">All dates</option>
-    </select>
-    <span class="muted">Select a date to show only that day’s scans.</span>
-  </div>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Browse by date</div>
+        <div class="card-sub">Select a scan date to filter the ledger to that day.</div>
 
-  <table id="histTable" class="display" border="1" class="dataframe">
+        <div class="toolbar">
+          <label for="dateFilter" style="font-weight:800; color: var(--muted);">Pick date</label>
+          <select id="dateFilter">
+            <option value="">All dates</option>
+          </select>
+        </div>
+
+        <table id="histTable" class="table" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th>scan_date</th>
+      <th>Scan Date</th>
       <th>days_since_scan</th>
-      <th>symbol</th>
-      <th>entry_close</th>
+      <th>Symbol</th>
+      <th>Entry</th>
       <th>Now</th>
-      <th>15d</th>
-      <th>30d</th>
-      <th>60d</th>
-      <th>100d</th>
-      <th>200d</th>
+      <th>15D</th>
+      <th>30D</th>
+      <th>60D</th>
+      <th>100D</th>
+      <th>200D</th>
     </tr>
   </thead>
   <tbody>
@@ -143,7 +351,7 @@
       <td>0</td>
       <td>AZN</td>
       <td>205.699905</td>
-      <td>-0.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -191,7 +399,7 @@
       <td>0</td>
       <td>DHC</td>
       <td>6.550000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -227,7 +435,7 @@
       <td>0</td>
       <td>EIX</td>
       <td>71.459999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -239,7 +447,7 @@
       <td>0</td>
       <td>ENB</td>
       <td>53.880001</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -251,7 +459,7 @@
       <td>0</td>
       <td>EPD</td>
       <td>37.209999</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -263,7 +471,7 @@
       <td>0</td>
       <td>ETR</td>
       <td>105.070000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -275,7 +483,7 @@
       <td>0</td>
       <td>FHI</td>
       <td>55.439999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -321,9 +529,57 @@
     <tr>
       <td>2026-02-15</td>
       <td>0</td>
+      <td>IDA</td>
+      <td>144.259995</td>
+      <td>+0.0%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
+      <td>IDE</td>
+      <td>14.050000</td>
+      <td>-0.9%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
       <td>MOFG</td>
       <td>49.310001</td>
+      <td>+0.0%</td>
       <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
+      <td>NGG</td>
+      <td>92.400002</td>
+      <td>+0.0%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
+      <td>NIC</td>
+      <td>155.190002</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -347,7 +603,19 @@
       <td>0</td>
       <td>NSSC</td>
       <td>44.150002</td>
-      <td>+0.0%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
+      <td>PEBK</td>
+      <td>39.220001</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -383,7 +651,19 @@
       <td>0</td>
       <td>SHMD</td>
       <td>70.089996</td>
-      <td>-89.2%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>2026-02-15</td>
+      <td>0</td>
+      <td>SRE</td>
+      <td>94.779999</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -431,7 +711,7 @@
       <td>2</td>
       <td>AZN</td>
       <td>205.699905</td>
-      <td>-0.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -479,7 +759,7 @@
       <td>2</td>
       <td>DHC</td>
       <td>6.550000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -515,7 +795,7 @@
       <td>2</td>
       <td>EIX</td>
       <td>71.459999</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -527,7 +807,7 @@
       <td>2</td>
       <td>ENB</td>
       <td>53.880001</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -539,7 +819,7 @@
       <td>2</td>
       <td>EPD</td>
       <td>37.209999</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -551,7 +831,7 @@
       <td>2</td>
       <td>ETR</td>
       <td>105.070000</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -563,7 +843,7 @@
       <td>2</td>
       <td>GEL</td>
       <td>17.540001</td>
-      <td>+0.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -611,7 +891,7 @@
       <td>2</td>
       <td>SHMD</td>
       <td>70.089996</td>
-      <td>-89.2%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -647,7 +927,7 @@
       <td>3</td>
       <td>AGCO</td>
       <td>138.470001</td>
-      <td>+1.5%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -719,7 +999,7 @@
       <td>3</td>
       <td>AZN</td>
       <td>204.759995</td>
-      <td>+0.4%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -731,7 +1011,7 @@
       <td>3</td>
       <td>BBDO</td>
       <td>3.700000</td>
-      <td>—</td>
+      <td>-3.5%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -767,7 +1047,7 @@
       <td>3</td>
       <td>CAT</td>
       <td>775.000000</td>
-      <td>-0.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -803,7 +1083,7 @@
       <td>3</td>
       <td>CIG</td>
       <td>2.290000</td>
-      <td>-3.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -875,7 +1155,7 @@
       <td>3</td>
       <td>DCI</td>
       <td>110.570000</td>
-      <td>—</td>
+      <td>-1.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -923,7 +1203,7 @@
       <td>3</td>
       <td>EIX</td>
       <td>69.080002</td>
-      <td>+3.4%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -935,7 +1215,7 @@
       <td>3</td>
       <td>ELPC</td>
       <td>10.980000</td>
-      <td>—</td>
+      <td>-2.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -947,7 +1227,7 @@
       <td>3</td>
       <td>ENB</td>
       <td>51.840000</td>
-      <td>—</td>
+      <td>+3.9%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -983,7 +1263,7 @@
       <td>3</td>
       <td>ETR</td>
       <td>101.959999</td>
-      <td>+3.1%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1007,7 +1287,7 @@
       <td>3</td>
       <td>FDX</td>
       <td>369.459991</td>
-      <td>—</td>
+      <td>+1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1019,7 +1299,7 @@
       <td>3</td>
       <td>FE</td>
       <td>48.840000</td>
-      <td>—</td>
+      <td>+2.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1151,7 +1431,7 @@
       <td>3</td>
       <td>GTX</td>
       <td>20.799999</td>
-      <td>—</td>
+      <td>+2.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1187,7 +1467,7 @@
       <td>3</td>
       <td>HAS</td>
       <td>105.879997</td>
-      <td>-3.2%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1259,7 +1539,7 @@
       <td>3</td>
       <td>HTHT</td>
       <td>53.200001</td>
-      <td>-1.3%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1271,7 +1551,7 @@
       <td>3</td>
       <td>HWM</td>
       <td>230.850006</td>
-      <td>—</td>
+      <td>+8.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1319,7 +1599,7 @@
       <td>3</td>
       <td>IQI</td>
       <td>10.260000</td>
-      <td>+1.3%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1451,7 +1731,7 @@
       <td>3</td>
       <td>NG</td>
       <td>11.770000</td>
-      <td>-8.7%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1547,7 +1827,7 @@
       <td>3</td>
       <td>OHI</td>
       <td>46.779999</td>
-      <td>—</td>
+      <td>+1.3%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1571,7 +1851,7 @@
       <td>3</td>
       <td>PANL</td>
       <td>9.010000</td>
-      <td>-5.9%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1583,7 +1863,7 @@
       <td>3</td>
       <td>PBR</td>
       <td>15.830000</td>
-      <td>-4.0%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1619,7 +1899,7 @@
       <td>3</td>
       <td>PDS</td>
       <td>89.940002</td>
-      <td>-2.9%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1655,7 +1935,7 @@
       <td>3</td>
       <td>PR</td>
       <td>17.180000</td>
-      <td>—</td>
+      <td>+0.6%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1679,7 +1959,7 @@
       <td>3</td>
       <td>RAVE</td>
       <td>3.480000</td>
-      <td>—</td>
+      <td>-5.2%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1799,7 +2079,7 @@
       <td>3</td>
       <td>SHMD</td>
       <td>70.089996</td>
-      <td>-89.2%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1823,7 +2103,7 @@
       <td>3</td>
       <td>SN</td>
       <td>129.020004</td>
-      <td>+1.6%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1907,7 +2187,7 @@
       <td>3</td>
       <td>THC</td>
       <td>226.350006</td>
-      <td>—</td>
+      <td>+2.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -2003,7 +2283,7 @@
       <td>3</td>
       <td>UFCS</td>
       <td>38.720001</td>
-      <td>+1.6%</td>
+      <td>—</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -2084,43 +2364,28 @@
     </tr>
   </tbody>
 </table>
+      </div>
+    </div>
+
+  </div>
 
   
-    <script>
-      function toNumber(x) {
-        if (x == null) return null;
-        const s = String(x).replace(/[%,$]/g, "").trim();
-        if (s === "" || s === "—") return null;
-        const n = Number(s);
-        if (!Number.isFinite(n)) return null;
-        // kill "-0"
-        if (Object.is(n, -0)) return 0;
-        // kill tiny noise
-        if (Math.abs(n) < 0.05) return 0;
-        return n;
-      }
-
-      function colorizeTable(tableSelector) {
-        const table = $(tableSelector).DataTable();
-
-        function apply() {
-          $(tableSelector + " tbody tr").each(function () {
-            $(this).find("td").each(function () {
-              const raw = $(this).text();
-              const n = toNumber(raw);
-              if (n === null) return;
-              $(this).removeClass("pos neg neu");
-              if (n > 0) $(this).addClass("pos");
-              else if (n < 0) $(this).addClass("neg");
-              else $(this).addClass("neu");
-            });
-          });
-        }
-
-        apply();
-        table.on("draw", function () { apply(); });
-      }
-    </script>
+  <script>
+    function isPercentLike(txt){
+      if(!txt) return false;
+      const s = String(txt).trim();
+      if(s === "—") return false;
+      return s.endsWith("%") && !isNaN(Number(s.replace("%","").replace("+","")));
+    }
+    function signOfPercent(txt){
+      const s = String(txt).trim().replace("%","").replace("+","");
+      const n = Number(s);
+      if(!Number.isFinite(n)) return null;
+      if(n > 0) return 1;
+      if(n < 0) return -1;
+      return 0;
+    }
+  </script>
     
 
   <script>
@@ -2132,13 +2397,12 @@
             order: [[0, 'desc']]
           });
 
-          // Populate dropdown from unique scan_date values (column 0)
+          // Dropdown from unique Scan Date (column 0)
           const dateIdx = 0;
           const seen = new Set();
           table.column(dateIdx).data().each(function (d) {
             if (d) seen.add(String(d).trim());
           });
-
           const dates = Array.from(seen).sort().reverse();
           const sel = document.getElementById("dateFilter");
           dates.forEach(function (d) {
@@ -2147,20 +2411,58 @@
             opt.textContent = d;
             sel.appendChild(opt);
           });
-
           sel.addEventListener("change", function () {
             const v = this.value;
-            if (!v) {
-              table.column(dateIdx).search("").draw();
-            } else {
-              table.column(dateIdx).search("^" + v + "$", true, false).draw();
-            }
+            if (!v) table.column(dateIdx).search("").draw();
+            else table.column(dateIdx).search("^" + v + "$", true, false).draw();
           });
 
-          // Colorize numeric cells (Now/15d/...)
+        // Color ONLY return columns: Now, 15D, 30D, 60D, 100D, 200D
+        function colorizeReturnColumns() {
+        const headers = [];
+        $("#histTable thead th").each(function () {
+            headers.push($(this).text().trim().toUpperCase());
+        });
+
+        const wanted = new Set(["NOW", "15D", "30D", "60D", "100D", "200D"]);
+        const idxs = [];
+
+        headers.forEach((h, i) => {
+            const key = h.replace(/\s+/g, "");
+            if (wanted.has(key)) idxs.push(i);
+        });
+
+        if (!idxs.length) return;
+
+        $("#histTable tbody tr").each(function () {
+            const tds = $(this).find("td");
+
+            idxs.forEach((i) => {
+            const cell = $(tds[i]);
+            const txt = cell.text().trim();
+
+            if (!txt || txt === "—") {
+                cell.css("color", "var(--muted)");
+                return;
+            }
+
+            const n = Number(txt.replace("%", "").replace("+", ""));
+            if (!Number.isFinite(n)) return;
+
+            cell.css("font-weight", "800");
+
+            if (n > 0) cell.css("color", "var(--pos)");
+            else if (n < 0) cell.css("color", "var(--neg)");
+            else cell.css("color", "var(--muted)");
+            });
+        });
+        }
+
+        colorizeReturnColumns();
+        table.on("draw", function () { colorizeReturnColumns(); });
         }
       } catch (e) {
-        console.warn("DataTables init failed.", e);
+        console.warn("History init failed.", e);
       }
     });
   </script>
