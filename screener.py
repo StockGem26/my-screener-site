@@ -969,33 +969,33 @@ def write_site(today_df: pd.DataFrame) -> None:
           }});
 
         // Color ONLY return columns: Now, 15D, 30D, 60D, 100D, 200D
-        function colorizeReturnColumns() {
+        function colorizeReturnColumns() {{
         const headers = [];
-        $("#histTable thead th").each(function () {
+        $("#histTable thead th").each(function () {{
             headers.push($(this).text().trim().toUpperCase());
-        });
+        }});
 
         const wanted = new Set(["NOW", "15D", "30D", "60D", "100D", "200D"]);
         const idxs = [];
 
-        headers.forEach((h, i) => {
+        headers.forEach((h, i) => {{
             const key = h.replace(/\s+/g, "");
             if (wanted.has(key)) idxs.push(i);
-        });
+        }});
 
         if (!idxs.length) return;
 
-        $("#histTable tbody tr").each(function () {
+        $("#histTable tbody tr").each(function () {{
             const tds = $(this).find("td");
 
-            idxs.forEach((i) => {
+            idxs.forEach((i) => {{
             const cell = $(tds[i]);
             const txt = cell.text().trim();
 
-            if (!txt || txt === "—") {
+            if (!txt || txt === "—") {{
                 cell.css("color", "var(--muted)");
                 return;
-            }
+            }}
 
             const n = Number(txt.replace("%", "").replace("+", ""));
             if (!Number.isFinite(n)) return;
@@ -1005,12 +1005,12 @@ def write_site(today_df: pd.DataFrame) -> None:
             if (n > 0) cell.css("color", "var(--pos)");
             else if (n < 0) cell.css("color", "var(--neg)");
             else cell.css("color", "var(--muted)");
-            });
-        });
-        }
+            }});
+        }});
+        }}
 
         colorizeReturnColumns();
-        table.on("draw", function () { colorizeReturnColumns(); });
+        table.on("draw", function () {{ colorizeReturnColumns(); }});
         }}
       }} catch (e) {{
         console.warn("History init failed.", e);
