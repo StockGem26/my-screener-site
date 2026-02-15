@@ -462,7 +462,7 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
     col_order = ["scan_date", "days_since_scan", "symbol", "entry_close", "Now"] + [f"{n}d" for n in HORIZONS]
     df_perf = df_perf_raw[col_order].copy()
 
-    return df_perf, summary
+    return df_perf
 
 
 def _summary_html(summary: dict) -> str:
