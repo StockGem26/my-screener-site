@@ -501,19 +501,21 @@ def write_site(today_df: pd.DataFrame) -> None:
     if today_df is None:
         today_df = pd.DataFrame()
 
+    # Save today's CSV (raw)
     today_df.to_csv(out_dir / "stage2_candidates.csv", index=False)
 
-    # NY timestamp for the site
-    generated_at = _generated_at_ny_str()
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    df_perf, summary = update_history_and_build_perf_table(today_df, out_dir)
-    summary_block = _summary_html(summary)
+    # Build performance table (history page)
+    df_perf = update_history_and_build_perf_table(today_df, out_dir)
 
-    # Today's table HTML
-    if today_df.empty:
-        today_table_html = "<p>No Stage 2 matches found today.</p>"
-    else:
-        # Keep only selected columns
+    # -----------------------------
+    # MAIN PAGE: simplify + format
+    # -----------------------------
+    today_view = today_df.copy()
+
+    if not today_view.empty:
+        # Keep only selected columns (you asked to remove sma50/sma150/sma200/prior_65d_high_close/sma200_slope20)
         keep_cols = [
             "symbol",
             "close",
@@ -522,16 +524,26 @@ def write_site(today_df: pd.DataFrame) -> None:
             "extended_pct_vs_50sma",
             "pivot_distance_pct",
         ]
-        today_df = today_df[[c for c in keep_cols if c in today_df.columns]]
+        today_view = today_view[[c for c in keep_cols if c in today_view.columns]]
 
-        # -------- Format numbers nicely --------
+        # Nicely formatted numbers
         def fmt_price(x):
-            return f"{x:,.2f}"
+            try:
+                return f"{float(x):,.2f}"
+            except Exception:
+                return str(x)
 
         def fmt_pct(x):
-            return f"{x:.2f}%"
+            try:
+                return f"{float(x):.2f}%"
+            except Exception:
+                return str(x)
 
         def fmt_vol(x):
+            try:
+                x = float(x)
+            except Exception:
+                return str(x)
             if x >= 1_000_000_000:
                 return f"{x/1_000_000_000:.2f}B"
             if x >= 1_000_000:
@@ -540,155 +552,392 @@ def write_site(today_df: pd.DataFrame) -> None:
                 return f"{x/1_000:.2f}K"
             return f"{x:.0f}"
 
-        if "close" in today_df.columns:
-            today_df["close"] = today_df["close"].apply(fmt_price)
+        if "close" in today_view.columns:
+            today_view["close"] = today_view["close"].apply(fmt_price)
+        if "volume" in today_view.columns:
+            today_view["volume"] = today_view["volume"].apply(fmt_vol)
+        if "vol50" in today_view.columns:
+            today_view["vol50"] = today_view["vol50"].apply(fmt_vol)
+        if "extended_pct_vs_50sma" in today_view.columns:
+            today_view["extended_pct_vs_50sma"] = today_view["extended_pct_vs_50sma"].apply(fmt_pct)
+        if "pivot_distance_pct" in today_view.columns:
+            today_view["pivot_distance_pct"] = today_view["pivot_distance_pct"].apply(fmt_pct)
 
-        if "extended_pct_vs_50sma" in today_df.columns:
-            today_df["extended_pct_vs_50sma"] = today_df["extended_pct_vs_50sma"].apply(fmt_pct)
+        # Friendlier column names
+        rename_map = {
+            "symbol": "Symbol",
+            "close": "Close",
+            "volume": "Volume",
+            "vol50": "Avg Vol (50D)",
+            "extended_pct_vs_50sma": "Ext vs 50D",
+            "pivot_distance_pct": "From Pivot",
+        }
+        today_view = today_view.rename(columns=rename_map)
 
-        if "pivot_distance_pct" in today_df.columns:
-            today_df["pivot_distance_pct"] = today_df["pivot_distance_pct"].apply(fmt_pct)
-
-        if "volume" in today_df.columns:
-            today_df["volume"] = today_df["volume"].apply(fmt_vol)
-
-        if "vol50" in today_df.columns:
-            today_df["vol50"] = today_df["vol50"].apply(fmt_vol)
-            today_table_html = today_df.head(500).to_html(index=False, escape=True)
-            today_table_html = today_table_html.replace("<table", '<table id="todayTable" class="display"', 1)
+    # Today's table HTML
+    if today_view.empty:
+        today_table_html = """
+        <div class="empty-state">
+          <div class="empty-title">No picks today</div>
+          <div class="empty-sub">No Stage 2 breakouts met your criteria on this scan.</div>
+        </div>
+        """
+    else:
+        today_table_html = today_view.head(500).to_html(index=False, escape=True)
+        today_table_html = today_table_html.replace("<table", '<table id="todayTable" class="table"', 1)
 
     # History table HTML
     if df_perf.empty:
-        hist_table_html = "<p>No historical picks yet.</p>"
+        hist_table_html = """
+        <div class="empty-state">
+          <div class="empty-title">No history yet</div>
+          <div class="empty-sub">Once picks are recorded, performance will appear here automatically.</div>
+        </div>
+        """
     else:
-        hist_table_html = df_perf.head(5000).to_html(index=False, escape=True)
-        hist_table_html = hist_table_html.replace("<table", '<table id="histTable" class="display"', 1)
+        # Make history table nicer headers too
+        dfh = df_perf.copy()
+        dfh = dfh.rename(columns={
+            "scan_date": "Scan Date",
+            "symbol": "Symbol",
+            "entry_close": "Entry",
+            "Now": "Now",
+            **{f"{n}d": f"{n}D" for n in HORIZONS},
+        })
+        hist_table_html = dfh.head(5000).to_html(index=False, escape=True)
+        hist_table_html = hist_table_html.replace("<table", '<table id="histTable" class="table"', 1)
 
-    # Shared CSS/JS for coloring numeric cells
-    color_css = """
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 30px;
-        background-color: #0f172a;
-        color: #e2e8f0;
-      }
-      a { color: #38bdf8; }
-      .muted { color: #94a3b8; margin-bottom: 12px; }
-      table.dataTable { background-color: #1e293b; color: #e2e8f0; }
-      table.dataTable thead { background-color: #334155; }
-      .dataTables_wrapper .dataTables_length,
-      .dataTables_wrapper .dataTables_filter,
-      .dataTables_wrapper .dataTables_info,
-      .dataTables_wrapper .dataTables_processing,
-      .dataTables_wrapper .dataTables_paginate {
-        color: #e2e8f0 !important;
-      }
-      .dataTables_wrapper .dataTables_filter input,
-      .dataTables_wrapper .dataTables_length select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 6px; padding: 4px 6px; outline: none;
-      }
-
-      .toolbar {
-        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-        margin: 10px 0 16px 0;
-      }
-      .toolbar select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 8px; padding: 6px 10px; outline: none;
-      }
-      .toolbar label { color: #cbd5e1; }
-
-      .stats {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-        background: #0b1220;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 10px 12px;
-        margin: 10px 0 18px;
-        color: #cbd5e1;
-      }
-      .stats .stat {
-        padding: 2px 0;
-      }
-    </style>
-    """
-
-    color_js = r"""
-    <script>
-      function toNumber(x) {
-        if (x == null) return null;
-        const s = String(x).replace(/[%,$]/g, "").trim();
-        if (s === "" || s === "—") return null;
-        const n = Number(s);
-        if (!Number.isFinite(n)) return null;
-        // kill "-0"
-        if (Object.is(n, -0)) return 0;
-        // kill tiny noise
-        if (Math.abs(n) < 0.05) return 0;
-        return n;
-      }
-
-      function colorizeTable(tableSelector) {
-        const table = $(tableSelector).DataTable();
-
-        function apply() {
-          $(tableSelector + " tbody tr").each(function () {
-            $(this).find("td").each(function () {
-              const raw = $(this).text();
-              const n = toNumber(raw);
-              if (n === null) return;
-              $(this).removeClass("pos neg neu");
-              if (n > 0) $(this).addClass("pos");
-              else if (n < 0) $(this).addClass("neg");
-              else $(this).addClass("neu");
-            });
-          });
-        }
-
-        apply();
-        table.on("draw", function () { apply(); });
-      }
-    </script>
-    """
-
-    # History page (with date dropdown filter)
-    history_html = f"""<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Stage 2 History & Performance</title>
+    # -----------------------------
+    # Shared luxury light theme
+    # -----------------------------
+    shared_head = """
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  {color_css}
+  <style>
+    :root{
+      --bg0:#f8fafc;
+      --bg1:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border: rgba(15,23,42,.08);
+      --shadow: 0 18px 60px rgba(2,6,23,.10);
+      --shadow2: 0 8px 24px rgba(2,6,23,.08);
+      --radius: 22px;
+      --accent: #2563eb;
+      --accent2:#7c3aed;
+      --pos:#16a34a;
+      --neg:#dc2626;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% 0%, rgba(37,99,235,.12), transparent 55%),
+        radial-gradient(900px 500px at 85% 10%, rgba(124,58,237,.12), transparent 55%),
+        linear-gradient(to bottom, var(--bg0), var(--bg0));
+    }
+
+    .container{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      box-shadow: var(--shadow2);
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .nav a{
+      color: var(--muted);
+      text-decoration:none;
+      font-weight:600;
+      margin-left: 14px;
+      transition: 200ms ease;
+    }
+    .nav a:hover{ color: var(--text); }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      color: var(--text);
+      font-weight:700;
+      text-decoration:none;
+      box-shadow: var(--shadow2);
+      transition: 220ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn.primary{
+      border: none;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    .hero{
+      margin-top: 22px;
+      padding: 42px 28px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.80);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero h1{
+      margin:0 0 10px 0;
+      font-size: clamp(32px, 4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 70ch;
+    }
+
+    .meta{
+      margin-top: 14px;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    .chips{
+      margin-top: 18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.70);
+      color: var(--muted);
+      font-weight:700;
+      font-size: 12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card{
+      grid-column: span 12;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow2);
+    }
+    @media (min-width: 900px){
+      .card.half{ grid-column: span 6; }
+    }
+
+    .card-title{
+      font-weight:800;
+      letter-spacing:-0.02em;
+      margin:0 0 8px 0;
+    }
+    .card-sub{
+      margin:0 0 12px 0;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    /* DataTables restyle */
+    table.table{
+      width:100%;
+      border-collapse: separate !important;
+      border-spacing: 0;
+      overflow:hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+    }
+    table.table thead th{
+      background: rgba(248,250,252,.9) !important;
+      color: var(--muted) !important;
+      font-weight:800 !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 12px 12px !important;
+    }
+    table.table tbody td{
+      padding: 12px 12px !important;
+      border-bottom: 1px solid rgba(15,23,42,.06) !important;
+      color: var(--text) !important; /* MAIN PAGE neutral */
+      font-weight:600;
+    }
+    table.table tbody tr:hover td{
+      background: rgba(37,99,235,.06) !important;
+      transition: 180ms ease;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter label,
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate{
+      color: var(--muted) !important;
+      font-weight:600;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin: 10px 0 16px 0;
+    }
+    .toolbar select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline:none;
+      font-weight:700;
+      color: var(--text);
+    }
+
+    /* Empty states */
+    .empty-state{
+      padding: 22px;
+      border: 1px dashed rgba(15,23,42,.18);
+      border-radius: 16px;
+      background: rgba(248,250,252,.8);
+    }
+    .empty-title{ font-weight:900; letter-spacing:-0.02em; margin-bottom: 4px; }
+    .empty-sub{ color: var(--muted); font-weight:600; }
+  </style>
+    """
+
+    # JS: date dropdown + color ONLY % columns (history)
+    shared_js = r"""
+  <script>
+    function isPercentLike(txt){
+      if(!txt) return false;
+      const s = String(txt).trim();
+      if(s === "—") return false;
+      return s.endsWith("%") && !isNaN(Number(s.replace("%","").replace("+","")));
+    }
+    function signOfPercent(txt){
+      const s = String(txt).trim().replace("%","").replace("+","");
+      const n = Number(s);
+      if(!Number.isFinite(n)) return null;
+      if(n > 0) return 1;
+      if(n < 0) return -1;
+      return 0;
+    }
+  </script>
+    """
+
+    # -----------------------------
+    # HISTORY PAGE
+    # -----------------------------
+    history_html = f"""<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Performance Ledger</title>
+  {shared_head}
 </head>
 <body>
-  <h1>📈 Stage 2 History & Performance</h1>
-  <div class="muted">Updated: <b>{generated_at}</b> · Returns are <b>trading days</b>.</div>
+  <div class="container">
 
-  {summary_block}
+    <div class="nav">
+      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div>
+        <a href="../index.html">Today</a>
+        <a href="index.html">Performance</a>
+        <a href="picks.csv">Download CSV</a>
+      </div>
+      <a class="btn primary" href="../index.html">View today</a>
+    </div>
 
-  <p><a href="../index.html">← Back to today</a> · <a href="picks.csv">Download picks.csv</a></p>
+    <div class="hero">
+      <h1>Performance Ledger</h1>
+      <p>
+        Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
+      </p>
+      <div class="meta">Updated: <b>{generated_at}</b></div>
+      <div class="chips">
+        <div class="chip">Daily after close</div>
+        <div class="chip">Timestamped picks</div>
+        <div class="chip">Forward returns</div>
+        <div class="chip">Downloadable CSV</div>
+      </div>
+    </div>
 
-  <div class="toolbar">
-    <label for="dateFilter"><b>Pick date:</b></label>
-    <select id="dateFilter">
-      <option value="">All dates</option>
-    </select>
-    <span class="muted">Select a date to show only that day’s scans.</span>
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Browse by date</div>
+        <div class="card-sub">Select a scan date to filter the ledger to that day.</div>
+
+        <div class="toolbar">
+          <label for="dateFilter" style="font-weight:800; color: var(--muted);">Pick date</label>
+          <select id="dateFilter">
+            <option value="">All dates</option>
+          </select>
+        </div>
+
+        {hist_table_html}
+      </div>
+    </div>
+
   </div>
 
-  {hist_table_html}
-
-  {color_js}
+  {shared_js}
 
   <script>
     window.addEventListener("load", function () {{
@@ -699,13 +948,12 @@ def write_site(today_df: pd.DataFrame) -> None:
             order: [[0, 'desc']]
           }});
 
-          // Populate dropdown from unique scan_date values (column 0)
+          // Dropdown from unique Scan Date (column 0)
           const dateIdx = 0;
           const seen = new Set();
           table.column(dateIdx).data().each(function (d) {{
             if (d) seen.add(String(d).trim());
           }});
-
           const dates = Array.from(seen).sort().reverse();
           const sel = document.getElementById("dateFilter");
           dates.forEach(function (d) {{
@@ -714,20 +962,58 @@ def write_site(today_df: pd.DataFrame) -> None:
             opt.textContent = d;
             sel.appendChild(opt);
           }});
-
           sel.addEventListener("change", function () {{
             const v = this.value;
-            if (!v) {{
-              table.column(dateIdx).search("").draw();
-            }} else {{
-              table.column(dateIdx).search("^" + v + "$", true, false).draw();
-            }}
+            if (!v) table.column(dateIdx).search("").draw();
+            else table.column(dateIdx).search("^" + v + "$", true, false).draw();
           }});
 
-          // Colorize numeric cells (Now/15d/...)
+        // Color ONLY return columns: Now, 15D, 30D, 60D, 100D, 200D
+        function colorizeReturnColumns() {
+        const headers = [];
+        $("#histTable thead th").each(function () {
+            headers.push($(this).text().trim().toUpperCase());
+        });
+
+        const wanted = new Set(["NOW", "15D", "30D", "60D", "100D", "200D"]);
+        const idxs = [];
+
+        headers.forEach((h, i) => {
+            const key = h.replace(/\s+/g, "");
+            if (wanted.has(key)) idxs.push(i);
+        });
+
+        if (!idxs.length) return;
+
+        $("#histTable tbody tr").each(function () {
+            const tds = $(this).find("td");
+
+            idxs.forEach((i) => {
+            const cell = $(tds[i]);
+            const txt = cell.text().trim();
+
+            if (!txt || txt === "—") {
+                cell.css("color", "var(--muted)");
+                return;
+            }
+
+            const n = Number(txt.replace("%", "").replace("+", ""));
+            if (!Number.isFinite(n)) return;
+
+            cell.css("font-weight", "800");
+
+            if (n > 0) cell.css("color", "var(--pos)");
+            else if (n < 0) cell.css("color", "var(--neg)");
+            else cell.css("color", "var(--muted)");
+            });
+        });
+        }
+
+        colorizeReturnColumns();
+        table.on("draw", function () { colorizeReturnColumns(); });
         }}
       }} catch (e) {{
-        console.warn("DataTables init failed.", e);
+        console.warn("History init failed.", e);
       }}
     }});
   </script>
@@ -736,35 +1022,83 @@ def write_site(today_df: pd.DataFrame) -> None:
 """
     (out_dir / "history" / "index.html").write_text(history_html, encoding="utf-8")
 
-    # Main index page
+    # -----------------------------
+    # MAIN PAGE (luxury product landing)
+    # -----------------------------
     main_html = f"""<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Stage 2 Screener</title>
-
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-  {color_css}
+  <title>StockGem</title>
+  {shared_head}
 </head>
 <body>
+  <div class="container">
 
-  <h1>📊 Stage 2 Screener</h1>
-  <div class="muted">Last updated: <b>{generated_at}</b></div>
+    <div class="nav">
+      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div>
+        <a href="index.html">Today</a>
+        <a href="history/index.html">Performance</a>
+        <a href="stage2_candidates.csv">Download</a>
+      </div>
+      <a class="btn primary" href="history/index.html">View ledger</a>
+    </div>
 
-  {summary_block}
+    <div class="hero">
+      <h1>Proof, not promises.</h1>
+      <p>
+        A beautiful, public performance ledger that tracks breakout picks forward in trading days.
+        Every scan is timestamped. Every result updates automatically.
+      </p>
+      <div class="meta">Last updated: <b>{generated_at}</b></div>
 
-  <p>
-    <a href="stage2_candidates.csv">Download today’s CSV</a>
-    · <a href="history/index.html">History & Performance</a>
-  </p>
+      <div class="chips">
+        <div class="chip">After-close updates</div>
+        <div class="chip">Full historical ledger</div>
+        <div class="chip">Forward returns</div>
+        <div class="chip">Downloadable CSV</div>
+      </div>
 
-  {today_table_html}
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn primary" href="#today">View today’s picks</a>
+        <a class="btn" href="history/index.html">See performance ledger</a>
+      </div>
+    </div>
 
-  {color_js}
+    <div class="grid" id="today">
+      <div class="card">
+        <div class="card-title">Today’s picks</div>
+        <div class="card-sub">
+          Curated list for today. Clean metrics only. Full proof lives in the ledger.
+        </div>
+        {today_table_html}
+      </div>
+
+      <div class="card half">
+        <div class="card-title">What you’re seeing</div>
+        <div class="card-sub">
+          This page is not a screener. It’s a presentation layer for tracked picks.
+        </div>
+        <div style="color:var(--muted); font-weight:600; line-height:1.7;">
+          <b>From Pivot</b> = percent above the prior 65D high (closer is tighter).<br/>
+          <b>Ext vs 50D</b> = percent above the 50-day average (filters “too extended”).<br/>
+          <b>Volume</b> = today’s volume, formatted (K/M/B).<br/>
+          <b>Avg Vol (50D)</b> = typical volume baseline.
+        </div>
+      </div>
+
+      <div class="card half">
+        <div class="card-title">Want the proof?</div>
+        <div class="card-sub">The ledger shows Now + 15D/30D/60D/100D/200D forward returns.</div>
+        <a class="btn primary" href="history/index.html">Open performance ledger</a>
+        <div style="height:10px;"></div>
+        <a class="btn" href="history/picks.csv">Download picks.csv</a>
+      </div>
+    </div>
+
+  </div>
 
   <script>
     window.addEventListener("load", function () {{
@@ -774,16 +1108,12 @@ def write_site(today_df: pd.DataFrame) -> None:
             pageLength: 25,
             order: []
           }});
-
-          // Colorize numeric cells (extended_pct, pivot_distance, etc)
-          colorizeTable("#todayTable");
         }}
       }} catch (e) {{
-        console.warn("DataTables init failed.", e);
+        console.warn("Today init failed.", e);
       }}
     }});
   </script>
-
 </body>
 </html>
 """
