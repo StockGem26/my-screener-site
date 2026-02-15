@@ -513,11 +513,49 @@ def write_site(today_df: pd.DataFrame) -> None:
     if today_df.empty:
         today_table_html = "<p>No Stage 2 matches found today.</p>"
     else:
-        if "symbol" in today_df.columns:
-            cols = ["symbol"] + [c for c in today_df.columns if c != "symbol"]
-            today_df = today_df[cols]
-        today_table_html = today_df.head(500).to_html(index=False, escape=True)
-        today_table_html = today_table_html.replace("<table", '<table id="todayTable" class="display"', 1)
+        # Keep only selected columns
+        keep_cols = [
+            "symbol",
+            "close",
+            "volume",
+            "vol50",
+            "extended_pct_vs_50sma",
+            "pivot_distance_pct",
+        ]
+        today_df = today_df[[c for c in keep_cols if c in today_df.columns]]
+
+        # -------- Format numbers nicely --------
+        def fmt_price(x):
+            return f"{x:,.2f}"
+
+        def fmt_pct(x):
+            return f"{x:.2f}%"
+
+        def fmt_vol(x):
+            if x >= 1_000_000_000:
+                return f"{x/1_000_000_000:.2f}B"
+            if x >= 1_000_000:
+                return f"{x/1_000_000:.2f}M"
+            if x >= 1_000:
+                return f"{x/1_000:.2f}K"
+            return f"{x:.0f}"
+
+        if "close" in today_df.columns:
+            today_df["close"] = today_df["close"].apply(fmt_price)
+
+        if "extended_pct_vs_50sma" in today_df.columns:
+            today_df["extended_pct_vs_50sma"] = today_df["extended_pct_vs_50sma"].apply(fmt_pct)
+
+        if "pivot_distance_pct" in today_df.columns:
+            today_df["pivot_distance_pct"] = today_df["pivot_distance_pct"].apply(fmt_pct)
+
+        if "volume" in today_df.columns:
+            today_df["volume"] = today_df["volume"].apply(fmt_vol)
+
+        if "vol50" in today_df.columns:
+            today_df["vol50"] = today_df["vol50"].apply(fmt_vol)
+            today_table_html = today_df.head(500).to_html(index=False, escape=True)
+            today_table_html = today_table_html.replace("<table", '<table id="todayTable" class="display"', 1)
 
     # History table HTML
     if df_perf.empty:
@@ -551,10 +589,6 @@ def write_site(today_df: pd.DataFrame) -> None:
         background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
         border-radius: 6px; padding: 4px 6px; outline: none;
       }
-
-      .pos { color: #22c55e !important; font-weight: 700; }
-      .neg { color: #ef4444 !important; font-weight: 700; }
-      .neu { color: #94a3b8 !important; font-weight: 600; }
 
       .toolbar {
         display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
@@ -691,7 +725,6 @@ def write_site(today_df: pd.DataFrame) -> None:
           }});
 
           // Colorize numeric cells (Now/15d/...)
-          colorizeTable("#histTable");
         }}
       }} catch (e) {{
         console.warn("DataTables init failed.", e);
