@@ -677,10 +677,12 @@ def write_site(today_df: pd.DataFrame) -> None:
       font-weight:700;
       letter-spacing:-0.02em;
     }
-    .dot{
-      width:10px;height:10px;border-radius:99px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    
+    .logo{
+      height: 42px;
+      width: auto;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
     }
 
     .nav a{
@@ -907,7 +909,9 @@ def write_site(today_df: pd.DataFrame) -> None:
   <div class="container">
 
     <div class="nav">
-      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div class="brand">
+        <img src="../assets/logo.png" alt="StockGems Logo" class="logo">
+      </div>
       <div>
         <a href="../index.html">Today</a>
         <a href="index.html">Performance</a>
@@ -1038,7 +1042,9 @@ def write_site(today_df: pd.DataFrame) -> None:
   <div class="container">
 
     <div class="nav">
-      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div class="brand">
+      <img src="assets/logo.png" alt="StockGems Logo" class="logo">
+      </div>
       <div>
         <a href="index.html">Today</a>
         <a href="history/index.html">Performance</a>
