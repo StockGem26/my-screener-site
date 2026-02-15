@@ -34,10 +34,6 @@
         border-radius: 6px; padding: 4px 6px; outline: none;
       }
 
-      .pos { color: #22c55e !important; font-weight: 700; }
-      .neg { color: #ef4444 !important; font-weight: 700; }
-      .neu { color: #94a3b8 !important; font-weight: 600; }
-
       .toolbar {
         display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
         margin: 10px 0 16px 0;
@@ -69,15 +65,15 @@
 <body>
 
   <h1>📊 Stage 2 Screener</h1>
-  <div class="muted">Last updated: <b>Feb 13, 2026 · 05:10 PM ET</b></div>
+  <div class="muted">Last updated: <b>Feb 15, 2026 · 02:40 PM ET</b></div>
 
   
     <div class="stats">
-      <span class="stat"><b>Rows with Now:</b> 112</span>
-      <span class="stat"><b>Win rate (Now &gt; 0):</b> +33.9%</span>
-      <span class="stat"><b>Avg Now:</b> -3.7%</span>
-      <span class="stat"><b>Median Now:</b> -0.3%</span>
-      <span class="stat"><b>Best / Worst Now:</b> +8.4% / -89.2%</span>
+      <span class="stat"><b>Rows with Now:</b> 129</span>
+      <span class="stat"><b>Win rate (Now &gt; 0):</b> +27.1%</span>
+      <span class="stat"><b>Avg Now:</b> -3.0%</span>
+      <span class="stat"><b>Median Now:</b> -0.1%</span>
+      <span class="stat"><b>Best / Worst Now:</b> +5.0% / -89.2%</span>
     </div>
     
 
@@ -91,13 +87,8 @@
     <tr style="text-align: right;">
       <th>symbol</th>
       <th>close</th>
-      <th>sma50</th>
-      <th>sma150</th>
-      <th>sma200</th>
-      <th>prior_65d_high_close</th>
       <th>volume</th>
       <th>vol50</th>
-      <th>sma200_slope20</th>
       <th>extended_pct_vs_50sma</th>
       <th>pivot_distance_pct</th>
     </tr>
@@ -105,250 +96,195 @@
   <tbody>
     <tr>
       <td>GPAT</td>
-      <td>10.760000</td>
-      <td>10.704600</td>
-      <td>10.640300</td>
-      <td>10.60657</td>
-      <td>10.750000</td>
-      <td>17665.0</td>
-      <td>7039.30</td>
-      <td>0.002058</td>
-      <td>0.517537</td>
-      <td>0.093025</td>
+      <td>10.76</td>
+      <td>17.66K</td>
+      <td>7.04K</td>
+      <td>0.52%</td>
+      <td>0.09%</td>
     </tr>
     <tr>
       <td>CCO</td>
-      <td>2.390000</td>
-      <td>2.120600</td>
-      <td>1.687267</td>
-      <td>1.54945</td>
-      <td>2.380000</td>
-      <td>8692549.0</td>
-      <td>4084148.98</td>
-      <td>0.005917</td>
-      <td>12.703957</td>
-      <td>0.420168</td>
+      <td>2.39</td>
+      <td>8.97M</td>
+      <td>4.09M</td>
+      <td>12.70%</td>
+      <td>0.42%</td>
     </tr>
     <tr>
       <td>AZN</td>
-      <td>205.699905</td>
-      <td>185.189998</td>
-      <td>168.809266</td>
-      <td>162.04830</td>
-      <td>204.759995</td>
-      <td>1983611.0</td>
-      <td>551462.22</td>
-      <td>0.259696</td>
-      <td>11.075062</td>
-      <td>0.459031</td>
+      <td>205.70</td>
+      <td>1.98M</td>
+      <td>551.46K</td>
+      <td>11.08%</td>
+      <td>0.46%</td>
     </tr>
     <tr>
-      <td>GEL</td>
-      <td>17.540001</td>
-      <td>16.337400</td>
-      <td>16.290400</td>
-      <td>16.21715</td>
-      <td>17.450001</td>
-      <td>476538.0</td>
-      <td>269190.76</td>
-      <td>0.017140</td>
-      <td>7.361030</td>
-      <td>0.515760</td>
+      <td>NSSC</td>
+      <td>44.15</td>
+      <td>1.01M</td>
+      <td>426.97K</td>
+      <td>6.69%</td>
+      <td>0.78%</td>
     </tr>
     <tr>
       <td>DNP</td>
-      <td>10.440000</td>
-      <td>10.052000</td>
-      <td>9.988867</td>
-      <td>9.91965</td>
-      <td>10.330000</td>
-      <td>1029554.0</td>
-      <td>636325.08</td>
-      <td>0.003886</td>
-      <td>3.859924</td>
-      <td>1.064856</td>
+      <td>10.44</td>
+      <td>1.03M</td>
+      <td>636.39K</td>
+      <td>3.86%</td>
+      <td>1.06%</td>
     </tr>
     <tr>
       <td>CZNC</td>
-      <td>23.879999</td>
-      <td>21.524800</td>
-      <td>20.222867</td>
-      <td>19.93405</td>
-      <td>23.620001</td>
-      <td>88217.0</td>
-      <td>62574.34</td>
-      <td>0.018839</td>
-      <td>10.941793</td>
-      <td>1.100755</td>
+      <td>23.88</td>
+      <td>88.60K</td>
+      <td>62.58K</td>
+      <td>10.94%</td>
+      <td>1.10%</td>
+    </tr>
+    <tr>
+      <td>NRP</td>
+      <td>125.41</td>
+      <td>57.10K</td>
+      <td>36.31K</td>
+      <td>13.28%</td>
+      <td>1.30%</td>
     </tr>
     <tr>
       <td>DPG</td>
-      <td>14.560000</td>
-      <td>13.102200</td>
-      <td>12.908800</td>
-      <td>12.74770</td>
-      <td>14.370000</td>
-      <td>191246.0</td>
-      <td>89612.92</td>
-      <td>0.009480</td>
-      <td>11.126379</td>
-      <td>1.322203</td>
+      <td>14.56</td>
+      <td>192.00K</td>
+      <td>89.63K</td>
+      <td>11.13%</td>
+      <td>1.32%</td>
+    </tr>
+    <tr>
+      <td>FHI</td>
+      <td>55.44</td>
+      <td>1.07M</td>
+      <td>625.14K</td>
+      <td>4.81%</td>
+      <td>1.37%</td>
+    </tr>
+    <tr>
+      <td>MOFG</td>
+      <td>49.31</td>
+      <td>576.30K</td>
+      <td>201.85K</td>
+      <td>15.49%</td>
+      <td>1.54%</td>
     </tr>
     <tr>
       <td>AMX</td>
-      <td>24.020000</td>
-      <td>21.114800</td>
-      <td>20.761200</td>
-      <td>19.90075</td>
-      <td>23.580000</td>
-      <td>4990915.0</td>
-      <td>2320838.30</td>
-      <td>0.031326</td>
-      <td>13.759071</td>
-      <td>1.865990</td>
+      <td>24.02</td>
+      <td>4.99M</td>
+      <td>2.32M</td>
+      <td>13.76%</td>
+      <td>1.87%</td>
     </tr>
     <tr>
       <td>DHC</td>
-      <td>6.550000</td>
-      <td>5.404400</td>
-      <td>4.517333</td>
-      <td>4.20550</td>
-      <td>6.420000</td>
-      <td>4096340.0</td>
-      <td>1470694.80</td>
-      <td>0.018758</td>
-      <td>21.197546</td>
-      <td>2.024924</td>
+      <td>6.55</td>
+      <td>4.13M</td>
+      <td>1.47M</td>
+      <td>21.20%</td>
+      <td>2.02%</td>
     </tr>
     <tr>
       <td>AKAM</td>
-      <td>105.769997</td>
-      <td>90.866600</td>
-      <td>82.329533</td>
-      <td>81.45490</td>
-      <td>103.260002</td>
-      <td>8051322.0</td>
-      <td>2996518.44</td>
-      <td>0.109397</td>
-      <td>16.401402</td>
-      <td>2.430752</td>
-    </tr>
-    <tr>
-      <td>SHLS</td>
-      <td>70.089996</td>
-      <td>56.419600</td>
-      <td>52.457000</td>
-      <td>49.70520</td>
-      <td>68.250000</td>
-      <td>379909.0</td>
-      <td>212754.18</td>
-      <td>0.138976</td>
-      <td>24.229871</td>
-      <td>2.695965</td>
+      <td>105.77</td>
+      <td>8.05M</td>
+      <td>3.00M</td>
+      <td>16.40%</td>
+      <td>2.43%</td>
     </tr>
     <tr>
       <td>SHG</td>
-      <td>70.089996</td>
-      <td>56.419600</td>
-      <td>52.457000</td>
-      <td>49.70520</td>
-      <td>68.250000</td>
-      <td>379909.0</td>
-      <td>212754.18</td>
-      <td>0.138976</td>
-      <td>24.229871</td>
-      <td>2.695965</td>
+      <td>70.09</td>
+      <td>379.91K</td>
+      <td>212.75K</td>
+      <td>24.23%</td>
+      <td>2.70%</td>
+    </tr>
+    <tr>
+      <td>SHLS</td>
+      <td>70.09</td>
+      <td>379.91K</td>
+      <td>212.75K</td>
+      <td>24.23%</td>
+      <td>2.70%</td>
     </tr>
     <tr>
       <td>SHMD</td>
-      <td>70.089996</td>
-      <td>56.419600</td>
-      <td>52.457000</td>
-      <td>49.70520</td>
-      <td>68.250000</td>
-      <td>379909.0</td>
-      <td>212754.18</td>
-      <td>0.138976</td>
-      <td>24.229871</td>
-      <td>2.695965</td>
+      <td>70.09</td>
+      <td>379.91K</td>
+      <td>212.75K</td>
+      <td>24.23%</td>
+      <td>2.70%</td>
     </tr>
     <tr>
       <td>ETR</td>
-      <td>105.070000</td>
-      <td>94.731400</td>
-      <td>92.826067</td>
-      <td>90.21360</td>
-      <td>101.959999</td>
-      <td>5498631.0</td>
-      <td>2750048.62</td>
-      <td>0.072928</td>
-      <td>10.913593</td>
-      <td>3.050216</td>
+      <td>105.07</td>
+      <td>6.21M</td>
+      <td>2.76M</td>
+      <td>10.91%</td>
+      <td>3.05%</td>
+    </tr>
+    <tr>
+      <td>FLS</td>
+      <td>89.69</td>
+      <td>3.19M</td>
+      <td>1.38M</td>
+      <td>18.87%</td>
+      <td>3.07%</td>
     </tr>
     <tr>
       <td>EIX</td>
-      <td>71.459999</td>
-      <td>60.954200</td>
-      <td>57.222467</td>
-      <td>56.27960</td>
-      <td>69.080002</td>
-      <td>4737708.0</td>
-      <td>3159658.16</td>
-      <td>0.031866</td>
-      <td>17.235563</td>
-      <td>3.445277</td>
+      <td>71.46</td>
+      <td>4.74M</td>
+      <td>3.16M</td>
+      <td>17.24%</td>
+      <td>3.45%</td>
     </tr>
     <tr>
       <td>ENB</td>
-      <td>53.880001</td>
-      <td>47.986800</td>
-      <td>47.744333</td>
-      <td>47.20145</td>
-      <td>51.840000</td>
-      <td>19438533.0</td>
-      <td>4647180.66</td>
-      <td>0.026020</td>
-      <td>12.280879</td>
-      <td>3.935187</td>
+      <td>53.88</td>
+      <td>20.31M</td>
+      <td>4.66M</td>
+      <td>12.28%</td>
+      <td>3.94%</td>
     </tr>
     <tr>
       <td>EPD</td>
-      <td>37.209999</td>
-      <td>32.951400</td>
-      <td>31.960933</td>
-      <td>31.80035</td>
-      <td>35.450001</td>
-      <td>8823092.0</td>
-      <td>4345589.84</td>
-      <td>0.018449</td>
-      <td>12.923878</td>
-      <td>4.964734</td>
+      <td>37.21</td>
+      <td>9.30M</td>
+      <td>4.36M</td>
+      <td>12.92%</td>
+      <td>4.96%</td>
     </tr>
     <tr>
       <td>DBD</td>
-      <td>80.300003</td>
-      <td>68.855200</td>
-      <td>62.761267</td>
-      <td>59.80250</td>
-      <td>75.589996</td>
-      <td>362558.0</td>
-      <td>251711.16</td>
-      <td>0.145422</td>
-      <td>16.621552</td>
-      <td>6.230992</td>
+      <td>80.30</td>
+      <td>462.90K</td>
+      <td>253.72K</td>
+      <td>16.62%</td>
+      <td>6.23%</td>
+    </tr>
+    <tr>
+      <td>HASI</td>
+      <td>39.70</td>
+      <td>4.05M</td>
+      <td>1.02M</td>
+      <td>17.18%</td>
+      <td>6.66%</td>
     </tr>
     <tr>
       <td>ATNI</td>
-      <td>28.620001</td>
-      <td>22.981200</td>
-      <td>18.687533</td>
-      <td>17.97435</td>
-      <td>26.110001</td>
-      <td>100437.0</td>
-      <td>52686.74</td>
-      <td>0.032309</td>
-      <td>24.536582</td>
-      <td>9.613176</td>
+      <td>28.62</td>
+      <td>100.44K</td>
+      <td>52.69K</td>
+      <td>24.54%</td>
+      <td>9.61%</td>
     </tr>
   </tbody>
 </table>
