@@ -3,97 +3,318 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Stage 2 Screener</title>
+  <title>StockGem</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-  
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 30px;
-        background-color: #0f172a;
-        color: #e2e8f0;
-      }
-      a { color: #38bdf8; }
-      .muted { color: #94a3b8; margin-bottom: 12px; }
-      table.dataTable { background-color: #1e293b; color: #e2e8f0; }
-      table.dataTable thead { background-color: #334155; }
-      .dataTables_wrapper .dataTables_length,
-      .dataTables_wrapper .dataTables_filter,
-      .dataTables_wrapper .dataTables_info,
-      .dataTables_wrapper .dataTables_processing,
-      .dataTables_wrapper .dataTables_paginate {
-        color: #e2e8f0 !important;
-      }
-      .dataTables_wrapper .dataTables_filter input,
-      .dataTables_wrapper .dataTables_length select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 6px; padding: 4px 6px; outline: none;
-      }
+  <style>
+    :root{
+      --bg0:#f8fafc;
+      --bg1:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border: rgba(15,23,42,.08);
+      --shadow: 0 18px 60px rgba(2,6,23,.10);
+      --shadow2: 0 8px 24px rgba(2,6,23,.08);
+      --radius: 22px;
+      --accent: #2563eb;
+      --accent2:#7c3aed;
+      --pos:#16a34a;
+      --neg:#dc2626;
+    }
 
-      .toolbar {
-        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-        margin: 10px 0 16px 0;
-      }
-      .toolbar select {
-        background: #0b1220; color: #e2e8f0; border: 1px solid #334155;
-        border-radius: 8px; padding: 6px 10px; outline: none;
-      }
-      .toolbar label { color: #cbd5e1; }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 15% 0%, rgba(37,99,235,.12), transparent 55%),
+        radial-gradient(900px 500px at 85% 10%, rgba(124,58,237,.12), transparent 55%),
+        linear-gradient(to bottom, var(--bg0), var(--bg0));
+    }
 
-      .stats {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-        background: #0b1220;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 10px 12px;
-        margin: 10px 0 18px;
-        color: #cbd5e1;
-      }
-      .stats .stat {
-        padding: 2px 0;
-      }
-    </style>
+    .container{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(12px);
+      border-radius: 999px;
+      box-shadow: var(--shadow2);
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:-0.02em;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .nav a{
+      color: var(--muted);
+      text-decoration:none;
+      font-weight:600;
+      margin-left: 14px;
+      transition: 200ms ease;
+    }
+    .nav a:hover{ color: var(--text); }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.75);
+      color: var(--text);
+      font-weight:700;
+      text-decoration:none;
+      box-shadow: var(--shadow2);
+      transition: 220ms ease;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
+    .btn.primary{
+      border: none;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    .hero{
+      margin-top: 22px;
+      padding: 42px 28px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.80);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .hero h1{
+      margin:0 0 10px 0;
+      font-size: clamp(32px, 4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .hero p{
+      margin:0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 70ch;
+    }
+
+    .meta{
+      margin-top: 14px;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    .chips{
+      margin-top: 18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .chip{
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.70);
+      color: var(--muted);
+      font-weight:700;
+      font-size: 12px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .card{
+      grid-column: span 12;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.85);
+      box-shadow: var(--shadow2);
+    }
+    @media (min-width: 900px){
+      .card.half{ grid-column: span 6; }
+    }
+
+    .card-title{
+      font-weight:800;
+      letter-spacing:-0.02em;
+      margin:0 0 8px 0;
+    }
+    .card-sub{
+      margin:0 0 12px 0;
+      color: var(--muted);
+      font-weight:600;
+      font-size: 13px;
+    }
+
+    /* DataTables restyle */
+    table.table{
+      width:100%;
+      border-collapse: separate !important;
+      border-spacing: 0;
+      overflow:hidden;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: white;
+    }
+    table.table thead th{
+      background: rgba(248,250,252,.9) !important;
+      color: var(--muted) !important;
+      font-weight:800 !important;
+      border-bottom: 1px solid var(--border) !important;
+      padding: 12px 12px !important;
+    }
+    table.table tbody td{
+      padding: 12px 12px !important;
+      border-bottom: 1px solid rgba(15,23,42,.06) !important;
+      color: var(--text) !important; /* MAIN PAGE neutral */
+      font-weight:600;
+    }
+    table.table tbody tr:hover td{
+      background: rgba(37,99,235,.06) !important;
+      transition: 180ms ease;
+    }
+
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline: none;
+    }
+    .dataTables_wrapper .dataTables_filter label,
+    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate{
+      color: var(--muted) !important;
+      font-weight:600;
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin: 10px 0 16px 0;
+    }
+    .toolbar select{
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      background: white;
+      outline:none;
+      font-weight:700;
+      color: var(--text);
+    }
+
+    /* Empty states */
+    .empty-state{
+      padding: 22px;
+      border: 1px dashed rgba(15,23,42,.18);
+      border-radius: 16px;
+      background: rgba(248,250,252,.8);
+    }
+    .empty-title{ font-weight:900; letter-spacing:-0.02em; margin-bottom: 4px; }
+    .empty-sub{ color: var(--muted); font-weight:600; }
+  </style>
     
 </head>
 <body>
+  <div class="container">
 
-  <h1>📊 Stage 2 Screener</h1>
-  <div class="muted">Last updated: <b>Feb 15, 2026 · 02:40 PM ET</b></div>
-
-  
-    <div class="stats">
-      <span class="stat"><b>Rows with Now:</b> 129</span>
-      <span class="stat"><b>Win rate (Now &gt; 0):</b> +27.1%</span>
-      <span class="stat"><b>Avg Now:</b> -3.0%</span>
-      <span class="stat"><b>Median Now:</b> -0.1%</span>
-      <span class="stat"><b>Best / Worst Now:</b> +5.0% / -89.2%</span>
+    <div class="nav">
+      <div class="brand"><span class="dot"></span>StockGem</div>
+      <div>
+        <a href="index.html">Today</a>
+        <a href="history/index.html">Performance</a>
+        <a href="stage2_candidates.csv">Download</a>
+      </div>
+      <a class="btn primary" href="history/index.html">View ledger</a>
     </div>
-    
 
-  <p>
-    <a href="stage2_candidates.csv">Download today’s CSV</a>
-    · <a href="history/index.html">History & Performance</a>
-  </p>
+    <div class="hero">
+      <h1>Proof, not promises.</h1>
+      <p>
+        A beautiful, public performance ledger that tracks breakout picks forward in trading days.
+        Every scan is timestamped. Every result updates automatically.
+      </p>
+      <div class="meta">Last updated: <b>2026-02-15 20:43 UTC</b></div>
 
-  <table id="todayTable" class="display" border="1" class="dataframe">
+      <div class="chips">
+        <div class="chip">After-close updates</div>
+        <div class="chip">Full historical ledger</div>
+        <div class="chip">Forward returns</div>
+        <div class="chip">Downloadable CSV</div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn primary" href="#today">View today’s picks</a>
+        <a class="btn" href="history/index.html">See performance ledger</a>
+      </div>
+    </div>
+
+    <div class="grid" id="today">
+      <div class="card">
+        <div class="card-title">Today’s picks</div>
+        <div class="card-sub">
+          Curated list for today. Clean metrics only. Full proof lives in the ledger.
+        </div>
+        <table id="todayTable" class="table" border="1" class="dataframe">
   <thead>
     <tr style="text-align: right;">
-      <th>symbol</th>
-      <th>close</th>
-      <th>volume</th>
-      <th>vol50</th>
-      <th>extended_pct_vs_50sma</th>
-      <th>pivot_distance_pct</th>
+      <th>Symbol</th>
+      <th>Close</th>
+      <th>Volume</th>
+      <th>Avg Vol (50D)</th>
+      <th>Ext vs 50D</th>
+      <th>From Pivot</th>
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td>SRE</td>
+      <td>94.78</td>
+      <td>6.23M</td>
+      <td>3.94M</td>
+      <td>7.07%</td>
+      <td>0.06%</td>
+    </tr>
     <tr>
       <td>GPAT</td>
       <td>10.76</td>
@@ -119,12 +340,28 @@
       <td>0.46%</td>
     </tr>
     <tr>
+      <td>IDE</td>
+      <td>14.05</td>
+      <td>94.70K</td>
+      <td>58.93K</td>
+      <td>10.57%</td>
+      <td>0.72%</td>
+    </tr>
+    <tr>
       <td>NSSC</td>
       <td>44.15</td>
       <td>1.01M</td>
       <td>426.97K</td>
       <td>6.69%</td>
       <td>0.78%</td>
+    </tr>
+    <tr>
+      <td>PEBK</td>
+      <td>39.22</td>
+      <td>30.70K</td>
+      <td>16.41K</td>
+      <td>7.18%</td>
+      <td>0.93%</td>
     </tr>
     <tr>
       <td>DNP</td>
@@ -143,12 +380,20 @@
       <td>1.10%</td>
     </tr>
     <tr>
-      <td>NRP</td>
-      <td>125.41</td>
-      <td>57.10K</td>
-      <td>36.31K</td>
-      <td>13.28%</td>
-      <td>1.30%</td>
+      <td>NIC</td>
+      <td>155.19</td>
+      <td>374.50K</td>
+      <td>154.26K</td>
+      <td>14.94%</td>
+      <td>1.22%</td>
+    </tr>
+    <tr>
+      <td>NGG</td>
+      <td>92.40</td>
+      <td>2.84M</td>
+      <td>751.39K</td>
+      <td>14.72%</td>
+      <td>1.29%</td>
     </tr>
     <tr>
       <td>DPG</td>
@@ -157,22 +402,6 @@
       <td>89.63K</td>
       <td>11.13%</td>
       <td>1.32%</td>
-    </tr>
-    <tr>
-      <td>FHI</td>
-      <td>55.44</td>
-      <td>1.07M</td>
-      <td>625.14K</td>
-      <td>4.81%</td>
-      <td>1.37%</td>
-    </tr>
-    <tr>
-      <td>MOFG</td>
-      <td>49.31</td>
-      <td>576.30K</td>
-      <td>201.85K</td>
-      <td>15.49%</td>
-      <td>1.54%</td>
     </tr>
     <tr>
       <td>AMX</td>
@@ -191,6 +420,14 @@
       <td>2.02%</td>
     </tr>
     <tr>
+      <td>IDA</td>
+      <td>144.26</td>
+      <td>698.30K</td>
+      <td>459.39K</td>
+      <td>10.70%</td>
+      <td>2.03%</td>
+    </tr>
+    <tr>
       <td>AKAM</td>
       <td>105.77</td>
       <td>8.05M</td>
@@ -199,7 +436,7 @@
       <td>2.43%</td>
     </tr>
     <tr>
-      <td>SHG</td>
+      <td>SHLS</td>
       <td>70.09</td>
       <td>379.91K</td>
       <td>212.75K</td>
@@ -207,7 +444,7 @@
       <td>2.70%</td>
     </tr>
     <tr>
-      <td>SHLS</td>
+      <td>SHG</td>
       <td>70.09</td>
       <td>379.91K</td>
       <td>212.75K</td>
@@ -229,22 +466,6 @@
       <td>2.76M</td>
       <td>10.91%</td>
       <td>3.05%</td>
-    </tr>
-    <tr>
-      <td>FLS</td>
-      <td>89.69</td>
-      <td>3.19M</td>
-      <td>1.38M</td>
-      <td>18.87%</td>
-      <td>3.07%</td>
-    </tr>
-    <tr>
-      <td>EIX</td>
-      <td>71.46</td>
-      <td>4.74M</td>
-      <td>3.16M</td>
-      <td>17.24%</td>
-      <td>3.45%</td>
     </tr>
     <tr>
       <td>ENB</td>
@@ -271,14 +492,6 @@
       <td>6.23%</td>
     </tr>
     <tr>
-      <td>HASI</td>
-      <td>39.70</td>
-      <td>4.05M</td>
-      <td>1.02M</td>
-      <td>17.18%</td>
-      <td>6.66%</td>
-    </tr>
-    <tr>
       <td>ATNI</td>
       <td>28.62</td>
       <td>100.44K</td>
@@ -288,44 +501,31 @@
     </tr>
   </tbody>
 </table>
+      </div>
 
-  
-    <script>
-      function toNumber(x) {
-        if (x == null) return null;
-        const s = String(x).replace(/[%,$]/g, "").trim();
-        if (s === "" || s === "—") return null;
-        const n = Number(s);
-        if (!Number.isFinite(n)) return null;
-        // kill "-0"
-        if (Object.is(n, -0)) return 0;
-        // kill tiny noise
-        if (Math.abs(n) < 0.05) return 0;
-        return n;
-      }
+      <div class="card half">
+        <div class="card-title">What you’re seeing</div>
+        <div class="card-sub">
+          This page is not a screener. It’s a presentation layer for tracked picks.
+        </div>
+        <div style="color:var(--muted); font-weight:600; line-height:1.7;">
+          <b>From Pivot</b> = percent above the prior 65D high (closer is tighter).<br/>
+          <b>Ext vs 50D</b> = percent above the 50-day average (filters “too extended”).<br/>
+          <b>Volume</b> = today’s volume, formatted (K/M/B).<br/>
+          <b>Avg Vol (50D)</b> = typical volume baseline.
+        </div>
+      </div>
 
-      function colorizeTable(tableSelector) {
-        const table = $(tableSelector).DataTable();
+      <div class="card half">
+        <div class="card-title">Want the proof?</div>
+        <div class="card-sub">The ledger shows Now + 15D/30D/60D/100D/200D forward returns.</div>
+        <a class="btn primary" href="history/index.html">Open performance ledger</a>
+        <div style="height:10px;"></div>
+        <a class="btn" href="history/picks.csv">Download picks.csv</a>
+      </div>
+    </div>
 
-        function apply() {
-          $(tableSelector + " tbody tr").each(function () {
-            $(this).find("td").each(function () {
-              const raw = $(this).text();
-              const n = toNumber(raw);
-              if (n === null) return;
-              $(this).removeClass("pos neg neu");
-              if (n > 0) $(this).addClass("pos");
-              else if (n < 0) $(this).addClass("neg");
-              else $(this).addClass("neu");
-            });
-          });
-        }
-
-        apply();
-        table.on("draw", function () { apply(); });
-      }
-    </script>
-    
+  </div>
 
   <script>
     window.addEventListener("load", function () {
@@ -335,15 +535,11 @@
             pageLength: 25,
             order: []
           });
-
-          // Colorize numeric cells (extended_pct, pivot_distance, etc)
-          colorizeTable("#todayTable");
         }
       } catch (e) {
-        console.warn("DataTables init failed.", e);
+        console.warn("Today init failed.", e);
       }
     });
   </script>
-
 </body>
 </html>
