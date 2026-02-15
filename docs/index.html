@@ -199,10 +199,19 @@
       border-bottom: 1px solid var(--border) !important;
       padding: 12px 12px !important;
     }
-    table.table tbody td{
+    /* Keep Today table neutral (no red/green) */
+    #todayTable tbody td{
       padding: 12px 12px !important;
       border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text) !important; /* MAIN PAGE neutral */
+      color: var(--text) !important;
+      font-weight:600;
+    }
+
+    /* Allow History table colors to be set by JS (no !important on color) */
+    #histTable tbody td{
+      padding: 12px 12px !important;
+      border-bottom: 1px solid rgba(15,23,42,.06) !important;
+      color: var(--text);
       font-weight:600;
     }
     table.table tbody tr:hover td{
@@ -274,7 +283,7 @@
         A beautiful, public performance ledger that tracks breakout picks forward in trading days.
         Every scan is timestamped. Every result updates automatically.
       </p>
-      <div class="meta">Last updated: <b>2026-02-15 20:43 UTC</b></div>
+      <div class="meta">Last updated: <b>Feb 15, 2026 · 05:47 PM ET</b></div>
 
       <div class="chips">
         <div class="chip">After-close updates</div>
@@ -308,20 +317,36 @@
   </thead>
   <tbody>
     <tr>
-      <td>SRE</td>
-      <td>94.78</td>
-      <td>6.23M</td>
-      <td>3.94M</td>
-      <td>7.07%</td>
+      <td>IMXI</td>
+      <td>15.57</td>
+      <td>541.60K</td>
+      <td>212.38K</td>
+      <td>0.79%</td>
       <td>0.06%</td>
     </tr>
     <tr>
-      <td>GPAT</td>
-      <td>10.76</td>
-      <td>17.66K</td>
-      <td>7.04K</td>
-      <td>0.52%</td>
+      <td>AFB</td>
+      <td>11.06</td>
+      <td>251.00K</td>
+      <td>127.27K</td>
+      <td>1.66%</td>
       <td>0.09%</td>
+    </tr>
+    <tr>
+      <td>BPYPP</td>
+      <td>16.27</td>
+      <td>34.30K</td>
+      <td>21.37K</td>
+      <td>7.68%</td>
+      <td>0.18%</td>
+    </tr>
+    <tr>
+      <td>AZN</td>
+      <td>205.55</td>
+      <td>2.50M</td>
+      <td>616.30K</td>
+      <td>10.69%</td>
+      <td>0.39%</td>
     </tr>
     <tr>
       <td>CCO</td>
@@ -332,36 +357,20 @@
       <td>0.42%</td>
     </tr>
     <tr>
-      <td>AZN</td>
-      <td>205.70</td>
-      <td>1.98M</td>
-      <td>551.46K</td>
-      <td>11.08%</td>
-      <td>0.46%</td>
+      <td>MPLX</td>
+      <td>56.83</td>
+      <td>2.35M</td>
+      <td>1.67M</td>
+      <td>3.72%</td>
+      <td>0.44%</td>
     </tr>
     <tr>
-      <td>IDE</td>
-      <td>14.05</td>
-      <td>94.70K</td>
-      <td>58.93K</td>
-      <td>10.57%</td>
-      <td>0.72%</td>
-    </tr>
-    <tr>
-      <td>NSSC</td>
-      <td>44.15</td>
-      <td>1.01M</td>
-      <td>426.97K</td>
-      <td>6.69%</td>
-      <td>0.78%</td>
-    </tr>
-    <tr>
-      <td>PEBK</td>
-      <td>39.22</td>
-      <td>30.70K</td>
-      <td>16.41K</td>
-      <td>7.18%</td>
-      <td>0.93%</td>
+      <td>STNG</td>
+      <td>70.51</td>
+      <td>2.25M</td>
+      <td>1.04M</td>
+      <td>22.68%</td>
+      <td>0.89%</td>
     </tr>
     <tr>
       <td>DNP</td>
@@ -380,22 +389,6 @@
       <td>1.10%</td>
     </tr>
     <tr>
-      <td>NIC</td>
-      <td>155.19</td>
-      <td>374.50K</td>
-      <td>154.26K</td>
-      <td>14.94%</td>
-      <td>1.22%</td>
-    </tr>
-    <tr>
-      <td>NGG</td>
-      <td>92.40</td>
-      <td>2.84M</td>
-      <td>751.39K</td>
-      <td>14.72%</td>
-      <td>1.29%</td>
-    </tr>
-    <tr>
       <td>DPG</td>
       <td>14.56</td>
       <td>192.00K</td>
@@ -404,12 +397,36 @@
       <td>1.32%</td>
     </tr>
     <tr>
-      <td>AMX</td>
-      <td>24.02</td>
-      <td>4.99M</td>
-      <td>2.32M</td>
-      <td>13.76%</td>
-      <td>1.87%</td>
+      <td>ZTR</td>
+      <td>6.89</td>
+      <td>373.10K</td>
+      <td>261.50K</td>
+      <td>7.85%</td>
+      <td>1.32%</td>
+    </tr>
+    <tr>
+      <td>FHI</td>
+      <td>55.44</td>
+      <td>1.07M</td>
+      <td>625.14K</td>
+      <td>4.81%</td>
+      <td>1.37%</td>
+    </tr>
+    <tr>
+      <td>CHI</td>
+      <td>11.69</td>
+      <td>343.30K</td>
+      <td>200.56K</td>
+      <td>6.11%</td>
+      <td>1.39%</td>
+    </tr>
+    <tr>
+      <td>ATMU</td>
+      <td>64.12</td>
+      <td>2.86M</td>
+      <td>684.71K</td>
+      <td>14.97%</td>
+      <td>1.78%</td>
     </tr>
     <tr>
       <td>DHC</td>
@@ -428,38 +445,6 @@
       <td>2.03%</td>
     </tr>
     <tr>
-      <td>AKAM</td>
-      <td>105.77</td>
-      <td>8.05M</td>
-      <td>3.00M</td>
-      <td>16.40%</td>
-      <td>2.43%</td>
-    </tr>
-    <tr>
-      <td>SHLS</td>
-      <td>70.09</td>
-      <td>379.91K</td>
-      <td>212.75K</td>
-      <td>24.23%</td>
-      <td>2.70%</td>
-    </tr>
-    <tr>
-      <td>SHG</td>
-      <td>70.09</td>
-      <td>379.91K</td>
-      <td>212.75K</td>
-      <td>24.23%</td>
-      <td>2.70%</td>
-    </tr>
-    <tr>
-      <td>SHMD</td>
-      <td>70.09</td>
-      <td>379.91K</td>
-      <td>212.75K</td>
-      <td>24.23%</td>
-      <td>2.70%</td>
-    </tr>
-    <tr>
       <td>ETR</td>
       <td>105.07</td>
       <td>6.21M</td>
@@ -468,12 +453,44 @@
       <td>3.05%</td>
     </tr>
     <tr>
+      <td>EIX</td>
+      <td>71.46</td>
+      <td>4.74M</td>
+      <td>3.16M</td>
+      <td>17.24%</td>
+      <td>3.45%</td>
+    </tr>
+    <tr>
+      <td>ASGI</td>
+      <td>25.64</td>
+      <td>500.70K</td>
+      <td>243.36K</td>
+      <td>13.66%</td>
+      <td>3.60%</td>
+    </tr>
+    <tr>
       <td>ENB</td>
       <td>53.88</td>
       <td>20.31M</td>
       <td>4.66M</td>
       <td>12.28%</td>
       <td>3.94%</td>
+    </tr>
+    <tr>
+      <td>AMAT</td>
+      <td>354.91</td>
+      <td>15.70M</td>
+      <td>7.53M</td>
+      <td>20.54%</td>
+      <td>3.98%</td>
+    </tr>
+    <tr>
+      <td>LINC</td>
+      <td>28.90</td>
+      <td>1.04M</td>
+      <td>270.45K</td>
+      <td>15.65%</td>
+      <td>4.86%</td>
     </tr>
     <tr>
       <td>EPD</td>
@@ -492,12 +509,12 @@
       <td>6.23%</td>
     </tr>
     <tr>
-      <td>ATNI</td>
-      <td>28.62</td>
-      <td>100.44K</td>
-      <td>52.69K</td>
-      <td>24.54%</td>
-      <td>9.61%</td>
+      <td>AKAM</td>
+      <td>111.76</td>
+      <td>7.33M</td>
+      <td>3.15M</td>
+      <td>22.35%</td>
+      <td>6.83%</td>
     </tr>
   </tbody>
 </table>
