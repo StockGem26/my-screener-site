@@ -1,12 +1,14 @@
 import io
 import re
+import json
+import argparse
 import requests
 import numpy as np
 import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 from zoneinfo import ZoneInfo
 from pathlib import Path
 
@@ -20,6 +22,8 @@ YF_CHUNK_SIZE = 250        # 200–400 usually best
 CACHE_STALE_DAYS = 5       # allow weekends/holidays
 
 NY_TZ = ZoneInfo("America/New_York")
+
+STOP_PCTS_DEFAULT = [5, 6, 7, 8]
 
 
 # -----------------------------
@@ -252,7 +256,7 @@ def _get_ohlcv_cached_or_download(sym: str, period: str = "2y") -> pd.DataFrame 
 
 
 # -----------------------------
-# Performance / history helpers
+# Performance / history helpers (your existing ledger)
 # -----------------------------
 def _get_close_series_cached(sym: str, years: int = 8) -> pd.Series | None:
     """
@@ -463,30 +467,6 @@ def update_history_and_build_perf_table(today_df: pd.DataFrame, out_dir: Path) -
     df_perf = df_perf_raw[col_order].copy()
 
     return df_perf, summary
-
-
-def _summary_html(summary: dict) -> str:
-    """
-    Render a compact stats bar.
-    """
-    if not summary or summary.get("count", 0) == 0:
-        return """<div class="stats">No performance stats yet.</div>"""
-
-    win = _pct_str(summary["win_rate"]) if summary.get("win_rate") is not None else "—"
-    avg = _pct_str(summary["avg"]) if summary.get("avg") is not None else "—"
-    med = _pct_str(summary["median"]) if summary.get("median") is not None else "—"
-    best = _pct_str(summary["best"]) if summary.get("best") is not None else "—"
-    worst = _pct_str(summary["worst"]) if summary.get("worst") is not None else "—"
-
-    return f"""
-    <div class="stats">
-      <span class="stat"><b>Rows with Now:</b> {summary["count"]}</span>
-      <span class="stat"><b>Win rate (Now &gt; 0):</b> {win}</span>
-      <span class="stat"><b>Avg Now:</b> {avg}</span>
-      <span class="stat"><b>Median Now:</b> {med}</span>
-      <span class="stat"><b>Best / Worst Now:</b> {best} / {worst}</span>
-    </div>
-    """
 
 
 # -----------------------------
@@ -812,21 +792,18 @@ def write_site(today_df: pd.DataFrame) -> None:
       background: white;
     }
     table.table thead th{
-      background: rgba(248,250,252,.9) !important;
+      background: rgba(248,250c,252,.9) !important;
       color: var(--muted) !important;
       font-weight:800 !important;
       border-bottom: 1px solid var(--border) !important;
       padding: 12px 12px !important;
     }
-    /* Keep Today table neutral (no red/green) */
     #todayTable tbody td{
       padding: 12px 12px !important;
       border-bottom: 1px solid rgba(15,23,42,.06) !important;
       color: var(--text) !important;
       font-weight:600;
     }
-
-    /* Allow History table colors to be set by JS (no !important on color) */
     #histTable tbody td{
       padding: 12px 12px !important;
       border-bottom: 1px solid rgba(15,23,42,.06) !important;
@@ -871,7 +848,6 @@ def write_site(today_df: pd.DataFrame) -> None:
       color: var(--text);
     }
 
-    /* Empty states */
     .empty-state{
       padding: 22px;
       border: 1px dashed rgba(15,23,42,.18);
@@ -891,20 +867,10 @@ def write_site(today_df: pd.DataFrame) -> None:
       if(s === "—") return false;
       return s.endsWith("%") && !isNaN(Number(s.replace("%","").replace("+","")));
     }
-    function signOfPercent(txt){
-      const s = String(txt).trim().replace("%","").replace("+","");
-      const n = Number(s);
-      if(!Number.isFinite(n)) return null;
-      if(n > 0) return 1;
-      if(n < 0) return -1;
-      return 0;
-    }
   </script>
     """
 
-    # -----------------------------
-    # HISTORY PAGE
-    # -----------------------------
+    # History page HTML (unchanged concept)
     history_html = f"""<!doctype html>
 <html>
 <head>
@@ -990,7 +956,7 @@ def write_site(today_df: pd.DataFrame) -> None:
             else table.column(dateIdx).search("^" + v + "$", true, false).draw();
           }});
 
-          // ✅ Color ONLY the "Now" column (and nothing else)
+          // Color ONLY the "Now" column
           function colorizeNowOnly() {{
             let nowIdx = null;
             $("#histTable thead th").each(function (i) {{
@@ -1032,11 +998,9 @@ def write_site(today_df: pd.DataFrame) -> None:
 </body>
 </html>
 """
-    (out_dir / "history" / "index.html").write_text(history_html, encoding="utf-8")
+    (Path("docs") / "history" / "index.html").write_text(history_html, encoding="utf-8")
 
-    # -----------------------------
-    # MAIN PAGE (luxury product landing)
-    # -----------------------------
+    # Main page HTML (unchanged concept)
     main_html = f"""<!doctype html>
 <html>
 <head>
@@ -1130,7 +1094,7 @@ def write_site(today_df: pd.DataFrame) -> None:
 </body>
 </html>
 """
-    (out_dir / "index.html").write_text(main_html, encoding="utf-8")
+    (Path("docs") / "index.html").write_text(main_html, encoding="utf-8")
 
 
 # -----------------------------
@@ -1223,8 +1187,58 @@ def stage2_check(df: pd.DataFrame) -> tuple[bool, dict]:
     return passed, metrics
 
 
+def _stage2_trigger_dates(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Vectorized Stage 2 trigger detection.
+    Returns a DataFrame indexed by date with columns:
+      close, low, trigger(bool)
+    Trigger is breakout day ONLY (not persistent).
+    """
+    if df is None or df.empty or len(df) < 260:
+        return pd.DataFrame()
+
+    close = df["close"].astype(float)
+    low = df["low"].astype(float)
+    vol = df["volume"].astype(float)
+
+    sma50 = close.rolling(50).mean()
+    sma150 = close.rolling(150).mean()
+    sma200 = close.rolling(200).mean()
+    vol50 = vol.rolling(50).mean()
+
+    # Conditions by date
+    cond_ma = (sma50 > sma150) & (sma150 > sma200)
+
+    # 200SMA slope: use rolling linear fit on last 20 points (fast-ish)
+    # We'll approximate slope with diff over 20 days (more stable + faster):
+    sma200_slope20 = sma200.diff(20)
+    cond_slope = sma200_slope20 > 0
+
+    cond_price = (close > sma50) & (close > sma150)
+
+    # prior 65-day high close excluding today
+    prior_high_65 = close.shift(1).rolling(65).max()
+    breakout = close > prior_high_65
+
+    # Trigger only on first breakout day
+    trigger = breakout & (~breakout.shift(1).fillna(False))
+
+    cond_vol = vol >= 1.4 * vol50
+    cond_not_extended = close <= 1.25 * sma50
+
+    passed = cond_ma & cond_slope & cond_price & trigger & cond_vol & cond_not_extended
+
+    out = pd.DataFrame({
+        "close": close,
+        "low": low,
+        "trigger": passed.fillna(False),
+    }, index=df.index)
+
+    return out.dropna(subset=["close", "low"])
+
+
 # -----------------------------
-# Faster scan (cache + batch yf)
+# Faster scan (cache + batch yf)  (today scan)
 # -----------------------------
 def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
     symbols = fetch_us_ticker_universe_ex_etf()
@@ -1265,7 +1279,6 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
     def worker(sym: str):
         df = all_frames.get(sym)
         if df is None:
-            # fallback: try single download or cached
             df = _get_ohlcv_cached_or_download(sym, period=period)
         passed, metrics = stage2_check(df)
         if passed:
@@ -1295,7 +1308,245 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
     return df_out
 
 
+# -----------------------------
+# Replay engine (yearly “as-if-live” results)
+# -----------------------------
+def _trade_stats(returns: pd.Series, stop_hit: pd.Series | None = None) -> dict:
+    r = pd.to_numeric(returns, errors="coerce").dropna()
+    if r.empty:
+        return {
+            "count": 0,
+            "win_rate": None,
+            "avg_gain": None,
+            "avg_loss": None,
+            "expectancy": None,
+            "profit_factor": None,
+            "stop_hit_rate": None if stop_hit is None else None,
+        }
+
+    winners = r[r > 0]
+    losers = r[r < 0]
+
+    win_rate = float((r > 0).mean() * 100.0)
+    avg_gain = float(winners.mean()) if not winners.empty else 0.0
+    avg_loss = float(losers.mean()) if not losers.empty else 0.0  # negative
+    expectancy = float(r.mean())
+
+    sum_gains = float(winners.sum()) if not winners.empty else 0.0
+    sum_losses = float(losers.sum()) if not losers.empty else 0.0  # negative
+    profit_factor = None
+    if sum_losses != 0:
+        profit_factor = float(sum_gains / abs(sum_losses))
+    elif sum_gains > 0:
+        profit_factor = float("inf")
+
+    stop_hit_rate = None
+    if stop_hit is not None:
+        sh = pd.to_numeric(stop_hit, errors="coerce").dropna()
+        if not sh.empty:
+            stop_hit_rate = float((sh.astype(bool)).mean() * 100.0)
+
+    return {
+        "count": int(len(r)),
+        "win_rate": win_rate,
+        "avg_gain": avg_gain,
+        "avg_loss": avg_loss,
+        "expectancy": expectancy,
+        "profit_factor": profit_factor,
+        "stop_hit_rate": stop_hit_rate,
+    }
+
+
+def build_year_replay(year: int, period: str = "2y", stop_pcts: list[int] | None = None) -> None:
+    """
+    Builds:
+      docs/history/<year>/signals.csv
+      docs/history/<year>/outcomes.csv
+      docs/history/<year>/summary.json
+
+    Entry: same-day close
+    Stop: if future low <= stop price, exit at stop price (conservative)
+    """
+    if stop_pcts is None:
+        stop_pcts = STOP_PCTS_DEFAULT
+
+    out_dir = Path("docs") / "history" / str(year)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    symbols = fetch_us_ticker_universe_ex_etf()
+    print(f"[Replay {year}] Universe size (ex-ETF): {len(symbols):,}")
+
+    # Ensure we have enough data. For a year replay, 2y is usually enough (needs 200 + 65 lookback).
+    # If you ever replay older years, bump to 3y/5y.
+    cached_frames: dict[str, pd.DataFrame] = {}
+    need_fetch: list[str] = []
+
+    for sym in symbols:
+        path = _cache_path_ohlcv(sym)
+        cached = _safe_read_cached_df(path)
+        if cached is not None and not cached.empty and len(cached) >= 260:
+            cached_frames[sym] = cached
+        else:
+            need_fetch.append(sym)
+
+    if need_fetch:
+        print(f"[Replay {year}] Downloading missing OHLCV for {len(need_fetch):,} symbols...")
+        for i in tqdm(range(0, len(need_fetch), YF_CHUNK_SIZE), desc=f"[Replay {year}] Download batches"):
+            chunk = need_fetch[i:i + YF_CHUNK_SIZE]
+            batch_out = _download_ohlcv_batch(chunk, period=period)
+            for sym, df in batch_out.items():
+                _safe_write_cached_df(df, _cache_path_ohlcv(sym))
+            cached_frames.update(batch_out)
+
+    # Build signals + outcomes
+    signals_rows = []
+    outcome_rows = []
+
+    start = pd.Timestamp(f"{year}-01-01")
+    end = pd.Timestamp(f"{year}-12-31")
+
+    for sym in tqdm(symbols, desc=f"[Replay {year}] Processing symbols"):
+        df = cached_frames.get(sym)
+        if df is None or df.empty:
+            continue
+
+        # keep only rows around the year, but leave lookback prior
+        df = df.sort_index()
+        # If your cache includes timezones, normalize:
+        df.index = pd.to_datetime(df.index).tz_localize(None)
+
+        trig = _stage2_trigger_dates(df)
+        if trig.empty:
+            continue
+
+        # filter trigger dates in year
+        in_year = trig[(trig.index >= start) & (trig.index <= end) & (trig["trigger"] == True)]
+        if in_year.empty:
+            continue
+
+        closes = df["close"].astype(float).to_numpy()
+        lows = df["low"].astype(float).to_numpy()
+        idx = df.index
+
+        # For each trigger day, compute outcomes by position index
+        for dt_sig in in_year.index:
+            pos = idx.searchsorted(dt_sig)
+            if pos >= len(idx):
+                continue
+
+            entry_close = float(closes[pos])
+            # record signal
+            signals_rows.append({
+                "signal_date": dt_sig.strftime("%Y-%m-%d"),
+                "symbol": sym,
+                "entry_close": entry_close,
+            })
+
+            row = {
+                "signal_date": dt_sig.strftime("%Y-%m-%d"),
+                "symbol": sym,
+                "entry_close": entry_close,
+            }
+
+            for n in HORIZONS:
+                if pos + n >= len(idx):
+                    row[f"ret_{n}d"] = np.nan
+                    for sp in stop_pcts:
+                        row[f"ret_{n}d_stop{sp}"] = np.nan
+                        row[f"stop_hit_{n}d_stop{sp}"] = np.nan
+                    continue
+
+                exit_close = float(closes[pos + n])
+                base_ret = (exit_close / entry_close - 1.0) * 100.0
+                row[f"ret_{n}d"] = base_ret
+
+                # Stop simulation: look forward days 1..n inclusive for low breach
+                window_lows = lows[pos + 1: pos + n + 1]
+                for sp in stop_pcts:
+                    stop_price = entry_close * (1.0 - sp / 100.0)
+                    hit = bool(np.any(window_lows <= stop_price)) if len(window_lows) > 0 else False
+                    if hit:
+                        ret_stop = (stop_price / entry_close - 1.0) * 100.0
+                        row[f"ret_{n}d_stop{sp}"] = ret_stop
+                        row[f"stop_hit_{n}d_stop{sp}"] = 1
+                    else:
+                        row[f"ret_{n}d_stop{sp}"] = base_ret
+                        row[f"stop_hit_{n}d_stop{sp}"] = 0
+
+            outcome_rows.append(row)
+
+    df_signals = pd.DataFrame(signals_rows)
+    df_outcomes = pd.DataFrame(outcome_rows)
+
+    signals_path = out_dir / "signals.csv"
+    outcomes_path = out_dir / "outcomes.csv"
+    summary_path = out_dir / "summary.json"
+
+    df_signals.to_csv(signals_path, index=False)
+    df_outcomes.to_csv(outcomes_path, index=False)
+
+    # Build summary
+    summary = {
+        "year": year,
+        "generated_at_et": _generated_at_ny_str(),
+        "entry": "signal-day close",
+        "stop_rule": "if future low <= stop price, exit at stop price",
+        "stop_pcts": stop_pcts,
+        "horizons": HORIZONS,
+        "stats": {},  # stats[stop_setting][horizon] -> dict
+    }
+
+    if df_outcomes.empty:
+        summary["stats"] = {}
+        summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        print(f"[Replay {year}] No signals found. Wrote empty outputs to {out_dir}")
+        return
+
+    # Stop setting "off"
+    summary["stats"]["off"] = {}
+    for n in HORIZONS:
+        s = df_outcomes[f"ret_{n}d"] if f"ret_{n}d" in df_outcomes.columns else pd.Series(dtype=float)
+        summary["stats"]["off"][str(n)] = _trade_stats(s)
+
+    # Stops
+    for sp in stop_pcts:
+        key = f"stop{sp}"
+        summary["stats"][key] = {}
+        for n in HORIZONS:
+            rcol = f"ret_{n}d_stop{sp}"
+            hcol = f"stop_hit_{n}d_stop{sp}"
+            r = df_outcomes[rcol] if rcol in df_outcomes.columns else pd.Series(dtype=float)
+            h = df_outcomes[hcol] if hcol in df_outcomes.columns else None
+            summary["stats"][key][str(n)] = _trade_stats(r, h)
+
+    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+    print(f"[Replay {year}] Wrote:")
+    print(f"  - {signals_path}")
+    print(f"  - {outcomes_path}")
+    print(f"  - {summary_path}")
+
+
+# -----------------------------
+# CLI
+# -----------------------------
+def _parse_args():
+    p = argparse.ArgumentParser(description="StockGem Stage 2 scanner + yearly replay generator")
+    p.add_argument("--replay-year", type=int, default=None, help="Build a strategy replay for YEAR into docs/history/YEAR/")
+    p.add_argument("--replay-period", type=str, default="2y", help="yfinance period for replay downloads (default 2y)")
+    p.add_argument("--max-workers", type=int, default=6, help="Thread workers for daily scan")
+    p.add_argument("--period", type=str, default="2y", help="yfinance period for daily scan")
+    return p.parse_args()
+
+
 if __name__ == "__main__":
-    out = scan_all_stage2(max_workers=6, period="2y")
-    write_site(out)
-    print("Saved site files: docs/index.html, docs/stage2_candidates.csv, docs/history/picks.csv, docs/history/index.html")
+    args = _parse_args()
+
+    # Replay mode
+    if args.replay_year is not None:
+        build_year_replay(year=args.replay_year, period=args.replay_period, stop_pcts=STOP_PCTS_DEFAULT)
+    else:
+        # Normal daily scan + site update
+        out = scan_all_stage2(max_workers=args.max_workers, period=args.period)
+        write_site(out)
+        print("Saved site files: docs/index.html, docs/stage2_candidates.csv, docs/history/picks.csv, docs/history/index.html")
