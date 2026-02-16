@@ -677,12 +677,20 @@ def write_site(today_df: pd.DataFrame) -> None:
       font-weight:700;
       letter-spacing:-0.02em;
     }
-    
-    .logo{
-      height: 42px;
-      width: auto;
-      display: block;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
+
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .hero-seal{
+      display:block;
+      margin: 0 auto 14px auto;
+      width: min(320px, 70%);
+      height: auto;
+      opacity: 0.92;
+      filter: drop-shadow(0 10px 28px rgba(2,6,23,.18));
     }
 
     .nav a{
@@ -909,9 +917,7 @@ def write_site(today_df: pd.DataFrame) -> None:
   <div class="container">
 
     <div class="nav">
-      <div class="brand">
-        <img src="../assets/logo.png" alt="StockGems Logo" class="logo">
-      </div>
+      <div class="brand"><span class="dot"></span>StockGem</div>
       <div>
         <a href="../index.html">Today</a>
         <a href="index.html">Performance</a>
@@ -921,6 +927,7 @@ def write_site(today_df: pd.DataFrame) -> None:
     </div>
 
     <div class="hero">
+      <img src="../assets/logo.png" alt="StockGems" class="hero-seal">
       <h1>Performance Ledger</h1>
       <p>
         Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
@@ -1042,9 +1049,7 @@ def write_site(today_df: pd.DataFrame) -> None:
   <div class="container">
 
     <div class="nav">
-      <div class="brand">
-      <img src="assets/logo.png" alt="StockGems Logo" class="logo">
-      </div>
+      <div class="brand"><span class="dot"></span>StockGem</div>
       <div>
         <a href="index.html">Today</a>
         <a href="history/index.html">Performance</a>
@@ -1054,6 +1059,7 @@ def write_site(today_df: pd.DataFrame) -> None:
     </div>
 
     <div class="hero">
+      <img src="assets/logo.png" alt="StockGems" class="hero-seal">
       <h1>Proof, not promises.</h1>
       <p>
         A beautiful, public performance ledger that tracks breakout picks forward in trading days.

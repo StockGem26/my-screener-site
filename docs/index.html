@@ -68,12 +68,20 @@
       font-weight:700;
       letter-spacing:-0.02em;
     }
-    
-    .logo{
-      height: 42px;
-      width: auto;
-      display: block;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
+
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .hero-seal{
+      display:block;
+      margin: 0 auto 14px auto;
+      width: min(320px, 70%);
+      height: auto;
+      opacity: 0.92;
+      filter: drop-shadow(0 10px 28px rgba(2,6,23,.18));
     }
 
     .nav a{
@@ -270,9 +278,7 @@
   <div class="container">
 
     <div class="nav">
-      <div class="brand">
-      <img src="assets/logo.png" alt="StockGems Logo" class="logo">
-      </div>
+      <div class="brand"><span class="dot"></span>StockGem</div>
       <div>
         <a href="index.html">Today</a>
         <a href="history/index.html">Performance</a>
@@ -282,12 +288,13 @@
     </div>
 
     <div class="hero">
+      <img src="assets/logo.png" alt="StockGems" class="hero-seal">
       <h1>Proof, not promises.</h1>
       <p>
         A beautiful, public performance ledger that tracks breakout picks forward in trading days.
         Every scan is timestamped. Every result updates automatically.
       </p>
-      <div class="meta">Last updated: <b>Feb 15, 2026 · 06:42 PM ET</b></div>
+      <div class="meta">Last updated: <b>Feb 15, 2026 · 07:05 PM ET</b></div>
 
       <div class="chips">
         <div class="chip">After-close updates</div>
@@ -433,12 +440,28 @@
       <td>0.72%</td>
     </tr>
     <tr>
+      <td>NSSC</td>
+      <td>44.15</td>
+      <td>1.01M</td>
+      <td>426.97K</td>
+      <td>6.69%</td>
+      <td>0.78%</td>
+    </tr>
+    <tr>
       <td>STNG</td>
       <td>70.51</td>
       <td>2.25M</td>
       <td>1.04M</td>
       <td>22.68%</td>
       <td>0.89%</td>
+    </tr>
+    <tr>
+      <td>PEBK</td>
+      <td>39.22</td>
+      <td>30.70K</td>
+      <td>16.41K</td>
+      <td>7.18%</td>
+      <td>0.93%</td>
     </tr>
     <tr>
       <td>JHG</td>
@@ -489,6 +512,14 @@
       <td>1.29%</td>
     </tr>
     <tr>
+      <td>NRP</td>
+      <td>125.41</td>
+      <td>57.10K</td>
+      <td>36.31K</td>
+      <td>13.28%</td>
+      <td>1.30%</td>
+    </tr>
+    <tr>
       <td>DPG</td>
       <td>14.56</td>
       <td>192.00K</td>
@@ -537,6 +568,14 @@
       <td>1.54%</td>
     </tr>
     <tr>
+      <td>PAGP</td>
+      <td>21.59</td>
+      <td>2.68M</td>
+      <td>1.83M</td>
+      <td>9.12%</td>
+      <td>1.74%</td>
+    </tr>
+    <tr>
       <td>ATMU</td>
       <td>64.12</td>
       <td>2.86M</td>
@@ -567,6 +606,14 @@
       <td>459.39K</td>
       <td>10.70%</td>
       <td>2.03%</td>
+    </tr>
+    <tr>
+      <td>PINE</td>
+      <td>20.53</td>
+      <td>271.50K</td>
+      <td>181.59K</td>
+      <td>17.11%</td>
+      <td>2.09%</td>
     </tr>
     <tr>
       <td>NATL</td>

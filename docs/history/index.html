@@ -68,12 +68,20 @@
       font-weight:700;
       letter-spacing:-0.02em;
     }
-    
-    .logo{
-      height: 42px;
-      width: auto;
-      display: block;
-      filter: drop-shadow(0 4px 12px rgba(0,0,0,.15));
+
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
+    }
+
+    .hero-seal{
+      display:block;
+      margin: 0 auto 14px auto;
+      width: min(320px, 70%);
+      height: auto;
+      opacity: 0.92;
+      filter: drop-shadow(0 10px 28px rgba(2,6,23,.18));
     }
 
     .nav a{
@@ -270,9 +278,7 @@
   <div class="container">
 
     <div class="nav">
-      <div class="brand">
-        <img src="../assets/logo.png" alt="StockGems Logo" class="logo">
-      </div>
+      <div class="brand"><span class="dot"></span>StockGem</div>
       <div>
         <a href="../index.html">Today</a>
         <a href="index.html">Performance</a>
@@ -282,11 +288,12 @@
     </div>
 
     <div class="hero">
+      <img src="../assets/logo.png" alt="StockGems" class="hero-seal">
       <h1>Performance Ledger</h1>
       <p>
         Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
       </p>
-      <div class="meta">Updated: <b>Feb 15, 2026 · 06:42 PM ET</b></div>
+      <div class="meta">Updated: <b>Feb 15, 2026 · 07:05 PM ET</b></div>
       <div class="chips">
         <div class="chip">Daily after close</div>
         <div class="chip">Timestamped picks</div>
@@ -424,7 +431,7 @@
       <td>0</td>
       <td>BPYPP</td>
       <td>16.270000</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -604,7 +611,7 @@
       <td>0</td>
       <td>GPAT</td>
       <td>10.760000</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -784,7 +791,7 @@
       <td>0</td>
       <td>MPLX</td>
       <td>56.830002</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -856,7 +863,7 @@
       <td>0</td>
       <td>NIC</td>
       <td>155.190002</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -902,8 +909,32 @@
     <tr>
       <td>Feb 15</td>
       <td>0</td>
+      <td>PAGP</td>
+      <td>21.590000</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Feb 15</td>
+      <td>0</td>
       <td>PEBK</td>
       <td>39.220001</td>
+      <td>+0.0%</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Feb 15</td>
+      <td>0</td>
+      <td>PINE</td>
+      <td>20.530001</td>
       <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
@@ -964,7 +995,7 @@
       <td>0</td>
       <td>STNG</td>
       <td>70.510002</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1168,7 +1199,7 @@
       <td>2</td>
       <td>GPAT</td>
       <td>10.760000</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1588,7 +1619,7 @@
       <td>3</td>
       <td>FANG</td>
       <td>169.009995</td>
-      <td>—</td>
+      <td>+0.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1600,7 +1631,7 @@
       <td>3</td>
       <td>FDX</td>
       <td>369.459991</td>
-      <td>—</td>
+      <td>+1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1720,7 +1751,7 @@
       <td>3</td>
       <td>GPAT</td>
       <td>10.760000</td>
-      <td>—</td>
+      <td>+0.0%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1732,7 +1763,7 @@
       <td>3</td>
       <td>GPJA</td>
       <td>23.309999</td>
-      <td>—</td>
+      <td>+0.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1816,7 +1847,7 @@
       <td>3</td>
       <td>HG</td>
       <td>30.280001</td>
-      <td>—</td>
+      <td>+2.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1864,7 +1895,7 @@
       <td>3</td>
       <td>HWM</td>
       <td>230.850006</td>
-      <td>—</td>
+      <td>+8.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -1924,7 +1955,7 @@
       <td>3</td>
       <td>ITUB</td>
       <td>9.570000</td>
-      <td>—</td>
+      <td>-4.3%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -2104,7 +2135,7 @@
       <td>3</td>
       <td>NXPI</td>
       <td>249.750000</td>
-      <td>—</td>
+      <td>-2.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -2116,7 +2147,7 @@
       <td>3</td>
       <td>O</td>
       <td>64.779999</td>
-      <td>—</td>
+      <td>+1.4%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
@@ -2464,7 +2495,7 @@
       <td>3</td>
       <td>STEL</td>
       <td>39.709999</td>
-      <td>—</td>
+      <td>-3.1%</td>
       <td>—</td>
       <td>—</td>
       <td>—</td>
