@@ -887,6 +887,7 @@ def write_site(today_df: pd.DataFrame) -> None:
       <div>
         <a href="../index.html">Today</a>
         <a href="index.html">Performance</a>
+        <a href="2025/">2025 Results</a>
         <a href="picks.csv">Download CSV</a>
       </div>
       <a class="btn primary" href="../index.html">View today</a>
@@ -1017,6 +1018,7 @@ def write_site(today_df: pd.DataFrame) -> None:
       <div>
         <a href="index.html">Today</a>
         <a href="history/index.html">Performance</a>
+        <a href="history/2025/">2025 Results</a>
         <a href="stage2_candidates.csv">Download</a>
       </div>
       <a class="btn primary" href="history/index.html">View ledger</a>
