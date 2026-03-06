@@ -3,11 +3,12 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .config import YF_CHUNK_SIZE
+from .universe import fetch_us_ticker_universe_ex_etf
 from .cache_io import _cache_path_ohlcv, _safe_read_cached_df, _safe_write_cached_df
 from .time_utils import _is_cache_fresh
 from .yf_batch import _download_ohlcv_batch, _get_ohlcv_cached_or_download
-from .universe import fetch_us_ticker_universe_ex_etf
 from .stage2 import stage2_check
+
 
 def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
     symbols = fetch_us_ticker_universe_ex_etf()
@@ -37,9 +38,9 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
             _safe_write_cached_df(df, _cache_path_ohlcv(sym))
         downloaded_frames.update(batch_out)
 
-    all_frames = {**cached_frames, **downloaded_frames}
     results = []
     failures = 0
+    all_frames = {**cached_frames, **downloaded_frames}
 
     def worker(sym: str):
         df = all_frames.get(sym)
@@ -63,11 +64,20 @@ def scan_all_stage2(max_workers: int = 6, period: str = "2y") -> pd.DataFrame:
 
     df_out = pd.DataFrame(results)
     if df_out.empty:
-        print("No Stage 2 matches found.")
+        print("No matches found.")
         return df_out
 
-    df_out["pivot_distance_pct"] = (df_out["close"] / df_out["prior_65d_high_close"] - 1) * 100.0
-    df_out = df_out.sort_values(["pivot_distance_pct", "extended_pct_vs_50sma"], ascending=[True, True])
+    # Distance from pivot (base-derived pivot)
+    if "pivot_level" in df_out.columns:
+        df_out["pivot_distance_pct"] = (df_out["close"] / df_out["pivot_level"] - 1) * 100.0
+    else:
+        df_out["pivot_distance_pct"] = None
 
-    print(f"Stage 2 matches: {len(df_out):,} | Failures: {failures:,}")
+    # Sort: closest to pivot first, then least extended
+    if "extended_pct_vs_50sma" in df_out.columns:
+        df_out = df_out.sort_values(["pivot_distance_pct", "extended_pct_vs_50sma"], ascending=[True, True])
+    else:
+        df_out = df_out.sort_values(["pivot_distance_pct"], ascending=[True])
+
+    print(f"Matches: {len(df_out):,} | Failures: {failures:,}")
     return df_out

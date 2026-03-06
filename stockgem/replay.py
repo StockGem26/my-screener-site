@@ -65,7 +65,7 @@ def build_year_replay(year: int, period: str = "2y", stop_pcts: list[int] | None
       docs/history/<year>/outcomes.csv
       docs/history/<year>/summary.json
 
-    Entry: same-day close
+    Entry: signal-day close
     Stop: if future low <= stop price, exit at stop price (conservative)
     """
     if stop_pcts is None:
@@ -129,6 +129,7 @@ def build_year_replay(year: int, period: str = "2y", stop_pcts: list[int] | None
                 continue
 
             entry_close = float(closes[pos])
+
             signals_rows.append({
                 "signal_date": dt_sig.strftime("%Y-%m-%d"),
                 "symbol": sym,
