@@ -1,2241 +1,409 @@
 <!doctype html>
-<html>
-<head>
+<html lang="en">
+<head><title>StockGems · Performance Ledger</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Performance Ledger</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --bg0:#f8fafc;
-      --bg1:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border: rgba(15,23,42,.08);
-      --shadow: 0 18px 60px rgba(2,6,23,.10);
-      --shadow2: 0 8px 24px rgba(2,6,23,.08);
-      --radius: 22px;
-      --accent: #2563eb;
-      --accent2:#7c3aed;
-      --pos:#16a34a;
-      --neg:#dc2626;
+    :root {
+      --navy:    #1b2b5e;
+      --green:   #2d5a3d;
+      --green2:  #3a7050;
+      --bg:      #f9f8f6;
+      --surface: #ffffff;
+      --border:  rgba(27,43,94,.10);
+      --border2: rgba(27,43,94,.06);
+      --text:    #111827;
+      --muted:   #6b7280;
+      --muted2:  #9ca3af;
+      --pos:     #16803c;
+      --neg:     #b91c1c;
+      --pos-bg:  rgba(22,128,60,.08);
+      --neg-bg:  rgba(185,28,28,.07);
+      --radius:  16px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:    0 4px 16px rgba(27,43,94,.10);
+      --shadow-lg: 0 12px 40px rgba(27,43,94,.14);
     }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 15% 0%, rgba(37,99,235,.12), transparent 55%),
-        radial-gradient(900px 500px at 85% 10%, rgba(124,58,237,.12), transparent 55%),
-        linear-gradient(to bottom, var(--bg0), var(--bg0));
-    }
-
-    .container{
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 28px 18px 60px;
-    }
-
-    .nav{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.72);
-      backdrop-filter: blur(12px);
-      border-radius: 999px;
-      box-shadow: var(--shadow2);
-      position: sticky;
-      top: 14px;
-      z-index: 50;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:700;
-      letter-spacing:-0.02em;
-    }
-
-    .dot{
-      width:10px;height:10px;border-radius:99px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
-    }
-
-    .hero-seal{
-      display:block;
-      margin: 0 auto 14px auto;
-      width: min(320px, 70%);
-      height: auto;
-      opacity: 0.92;
-      filter: drop-shadow(0 10px 28px rgba(2,6,23,.18));
-    }
-
-    .nav a{
-      color: var(--muted);
-      text-decoration:none;
-      font-weight:600;
-      margin-left: 14px;
-      transition: 200ms ease;
-    }
-    .nav a:hover{ color: var(--text); }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.75);
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      font-weight:700;
-      text-decoration:none;
-      box-shadow: var(--shadow2);
-      transition: 220ms ease;
-    }
-    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn.primary{
-      border: none;
-      color: white;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .hero{
-      margin-top: 22px;
-      padding: 42px 28px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.80);
+    /* Layout */
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 80px; }
+
+    /* Nav */
+    .nav-outer {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(249,248,246,.92);
       backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
+      border-bottom: 1px solid var(--border);
     }
-    .hero h1{
-      margin:0 0 10px 0;
-      font-size: clamp(32px, 4vw, 46px);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
+    .nav {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px;
+      height: 60px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px;
     }
-    .hero p{
-      margin:0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.6;
-      max-width: 70ch;
+    .nav-logo img { height: 30px; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a {
+      text-decoration: none; color: var(--muted); font-size: 14px;
+      font-weight: 500; padding: 6px 12px; border-radius: 8px;
+      transition: background 150ms, color 150ms;
     }
-
-    .meta{
-      margin-top: 14px;
-      color: var(--muted);
-      font-weight:600;
-      font-size: 13px;
+    .nav-links a:hover { background: rgba(27,43,94,.07); color: var(--navy); }
+    .nav-links a.active { color: var(--navy); font-weight: 600; }
+    .nav-cta {
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--navy), var(--green));
+      color: #fff; font-size: 13px; font-weight: 600;
+      padding: 8px 18px; border-radius: 999px; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(27,43,94,.25);
+      transition: opacity 150ms, transform 150ms;
     }
-
-    .chips{
-      margin-top: 18px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .chip{
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.70);
-      color: var(--muted);
-      font-weight:700;
-      font-size: 12px;
+    .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text); margin: 5px 0; border-radius: 2px; }
+    @media (max-width: 680px) {
+      .nav-links {
+        display: none; position: absolute; top: 60px; left: 0; right: 0;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        flex-direction: column; align-items: flex-start;
+        padding: 12px 20px 16px; gap: 2px;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { width: 100%; }
+      .nav-toggle { display: block; }
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-      margin-top: 16px;
+    /* Hero */
+    .hero {
+      margin-top: 48px;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 40px; align-items: start;
     }
-    .card{
-      grid-column: span 12;
-      padding: 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow2);
+    @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--green2); margin-bottom: 12px;
     }
-    @media (min-width: 900px){
-      .card.half{ grid-column: span 6; }
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(36px, 5vw, 56px); font-weight: 800;
+      line-height: 1.07; letter-spacing: -.02em; color: var(--navy);
     }
-
-    .card-title{
-      font-weight:800;
-      letter-spacing:-0.02em;
-      margin:0 0 8px 0;
+    .hero-title em { font-style: italic; color: var(--green); }
+    .hero-sub { margin-top: 16px; font-size: 16px; color: var(--muted); max-width: 48ch; line-height: 1.65; }
+    .hero-meta { margin-top: 18px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted2); }
+    .pulse {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--pos);
+      box-shadow: 0 0 0 0 rgba(22,128,60,.5); animation: pulse 2s infinite;
     }
-    .card-sub{
-      margin:0 0 12px 0;
-      color: var(--muted);
-      font-weight:600;
-      font-size: 13px;
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(22,128,60,.5); }
+      70%  { box-shadow: 0 0 0 7px rgba(22,128,60,0); }
+      100% { box-shadow: 0 0 0 0 rgba(22,128,60,0); }
     }
-
-    /* DataTables restyle */
-    table.table{
-      width:100%;
-      border-collapse: separate !important;
-      border-spacing: 0;
-      overflow:hidden;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: white;
-    }
-    table.table thead th{
-      background: rgba(248,250c,252,.9) !important;
-      color: var(--muted) !important;
-      font-weight:800 !important;
-      border-bottom: 1px solid var(--border) !important;
-      padding: 12px 12px !important;
-    }
-    #todayTable tbody td{
-      padding: 12px 12px !important;
-      border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text) !important;
-      font-weight:600;
-    }
-    #histTable tbody td{
-      padding: 12px 12px !important;
-      border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text);
-      font-weight:600;
-    }
-    table.table tbody tr:hover td{
-      background: rgba(37,99,235,.06) !important;
-      transition: 180ms ease;
+    .hero-actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    .chip {
+      font-size: 12px; font-weight: 600; color: var(--navy);
+      background: rgba(27,43,94,.06); border: 1px solid rgba(27,43,94,.10);
+      padding: 5px 12px; border-radius: 999px;
     }
 
+    /* Stat sidebar */
+    .hero-stats { display: flex; flex-direction: column; gap: 10px; min-width: 190px; }
+    @media (max-width: 700px) { .hero-stats { flex-direction: row; flex-wrap: wrap; } }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 18px; box-shadow: var(--shadow-sm);
+    }
+    .stat-label { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
+    .stat-value { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: var(--navy); }
+    .stat-value.pos { color: var(--pos); }
+    .stat-value.neg { color: var(--neg); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+      font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 999px;
+      transition: all 150ms; border: none; cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--navy), var(--green));
+      color: #fff; box-shadow: 0 3px 12px rgba(27,43,94,.25);
+    }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-outline {
+      background: var(--surface); color: var(--navy);
+      border: 1.5px solid var(--border); box-shadow: var(--shadow-sm);
+    }
+    .btn-outline:hover { background: rgba(27,43,94,.04); border-color: rgba(27,43,94,.22); }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+    /* Section */
+    .section-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .section-title { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -.01em; }
+    .section-sub { font-size: 13px; color: var(--muted); }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .card-body { padding: 24px; }
+    .card-header { padding: 18px 24px 16px; border-bottom: 1px solid var(--border2); }
+    .card-header h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--navy); }
+    .card-header p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Explainer */
+    .explainer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (max-width: 520px) { .explainer-grid { grid-template-columns: 1fr; } }
+    .explainer-item { padding: 14px 16px; background: rgba(27,43,94,.03); border: 1px solid var(--border2); border-radius: var(--radius-sm); }
+    .explainer-item strong { display: block; font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .explainer-item span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.sg-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    table.sg-table thead th {
+      background: rgba(27,43,94,.04); color: var(--muted);
+      font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: left;
+    }
+    table.sg-table tbody td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border2);
+      color: var(--text); font-weight: 500; white-space: nowrap;
+    }
+    table.sg-table tbody tr:last-child td { border-bottom: none; }
+    table.sg-table tbody tr:hover td { background: rgba(27,43,94,.025); }
+    .sym-cell { font-weight: 700; color: var(--navy); font-size: 14px; letter-spacing: .02em; }
+    td.ret-pos { color: var(--pos); font-weight: 600; background: var(--pos-bg); }
+    td.ret-neg { color: var(--neg); font-weight: 600; background: var(--neg-bg); }
+    td.ret-now { font-weight: 700 !important; }
+
+    /* DataTables overrides */
     .dataTables_wrapper .dataTables_filter input,
-    .dataTables_wrapper .dataTables_length select{
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 8px 10px;
-      background: white;
-      outline: none;
+    .dataTables_wrapper .dataTables_length select {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 10px; background: var(--surface); color: var(--text); outline: none;
     }
-    .dataTables_wrapper .dataTables_filter label,
-    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_info,
-    .dataTables_wrapper .dataTables_paginate{
-      color: var(--muted) !important;
-      font-weight:600;
+    .dataTables_wrapper .dataTables_paginate {
+      color: var(--muted) !important; font-weight: 500; font-size: 13px; padding: 10px 0;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { border-radius: 6px !important; border: none !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: linear-gradient(135deg, var(--navy), var(--green)) !important;
+      color: #fff !important; border: none !important;
     }
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin: 10px 0 16px 0;
-    }
-    .toolbar select{
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 8px 10px;
-      background: white;
-      outline:none;
-      font-weight:700;
-      color: var(--text);
+    /* Chart */
+    .chart-wrap { position: relative; height: 240px; padding: 20px 24px; }
+
+    /* Filter row */
+    .filter-row { display: flex; align-items: center; gap: 10px; padding: 14px 24px 0; flex-wrap: wrap; }
+    .filter-row label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .filter-row select {
+      font-size: 13px; font-weight: 600; border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; background: var(--surface); color: var(--navy); outline: none; cursor: pointer;
     }
 
-    .empty-state{
-      padding: 22px;
-      border: 1px dashed rgba(15,23,42,.18);
-      border-radius: 16px;
-      background: rgba(248,250,252,.8);
+    /* Empty */
+    .empty { padding: 56px 24px; text-align: center; }
+    .empty-icon { font-size: 38px; margin-bottom: 12px; }
+    .empty-title { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+    .empty-sub { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
     }
-    .empty-title{ font-weight:900; letter-spacing:-0.02em; margin-bottom: 4px; }
-    .empty-sub{ color: var(--muted); font-weight:600; }
+    .footer img { height: 22px; opacity: .45; }
+    .footer p { font-size: 12px; color: var(--muted2); }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up   { animation: fadeUp .45s ease both; }
+    .delay-1   { animation-delay: .08s; }
+    .delay-2   { animation-delay: .16s; }
+    .delay-3   { animation-delay: .24s; }
+    .delay-4   { animation-delay: .32s; }
   </style>
-    
 </head>
 <body>
-  <div class="container">
 
+  <nav class="nav-outer">
     <div class="nav">
-      <div class="brand"><span class="dot"></span>StockGem</div>
-      <div>
+      <a class="nav-logo" href="../index.html">
+        <img src="../assets/logo.png" alt="StockGems"/>
+      </a>
+      <div class="nav-links" id="navLinks">
         <a href="../index.html">Today</a>
-        <a href="index.html">Performance</a>
-        <a href="2025/">2025 Results</a>
-        <a href="picks.csv">Download CSV</a>
+        <a href="../history/index.html" class="active">Performance</a>
+        <a href="../history/2025/">2025 Results</a>
+        <a href="../stage2_candidates.csv">CSV</a>
       </div>
-      <a class="btn primary" href="../index.html">View today</a>
+      <a class="nav-cta" href="../history/index.html">View Ledger →</a>
+      <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </nav>
+<div class="page-wrap">
 
-    <div class="hero">
-      <img src="../assets/logo.png" alt="StockGems" class="hero-seal">
-      <h1>Performance Ledger</h1>
-      <p>
-        Every pick is timestamped and tracked forward in trading days. This page is the proof archive.
-      </p>
-      <div class="meta">Updated: <b>Mar 05, 2026 · 11:58 PM ET</b></div>
-      <div class="chips">
-        <div class="chip">Daily after close</div>
-        <div class="chip">Timestamped picks</div>
-        <div class="chip">Forward returns</div>
-        <div class="chip">Downloadable CSV</div>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <div class="card-title">Browse by date</div>
-        <div class="card-sub">Select a scan date to filter the ledger to that day.</div>
-
-        <div class="toolbar">
-          <label for="dateFilter" style="font-weight:800; color: var(--muted);">Pick date</label>
-          <select id="dateFilter">
-            <option value="">All dates</option>
-          </select>
-        </div>
-
-        <table id="histTable" class="table" border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Scan Date</th>
-      <th>Days Since</th>
-      <th>Symbol</th>
-      <th>Entry</th>
-      <th>Now</th>
-      <th>15D</th>
-      <th>30D</th>
-      <th>60D</th>
-      <th>100D</th>
-      <th>200D</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>ADEA</td>
-      <td>21.000000</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>APA</td>
-      <td>32.380001</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>BSM</td>
-      <td>15.440000</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>BURL</td>
-      <td>321.470001</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>BVS</td>
-      <td>9.100000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>FTW</td>
-      <td>13.000000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>SENEA</td>
-      <td>141.919998</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 5</td>
-      <td>0</td>
-      <td>UAN</td>
-      <td>119.809998</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>AGX</td>
-      <td>463.359985</td>
-      <td>-8.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>AMPY</td>
-      <td>6.040000</td>
-      <td>-0.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>ANAB</td>
-      <td>60.549999</td>
-      <td>-5.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>ATNI</td>
-      <td>29.920000</td>
-      <td>-4.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>BTSG</td>
-      <td>41.959999</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>BTSGU</td>
-      <td>140.490005</td>
-      <td>-0.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>BUI</td>
-      <td>30.620001</td>
-      <td>-0.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>DAWN</td>
-      <td>12.870000</td>
-      <td>-0.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>KZR</td>
-      <td>7.310000</td>
-      <td>-6.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>OBE</td>
-      <td>8.480000</td>
-      <td>+1.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>OXLCZ</td>
-      <td>24.629999</td>
-      <td>-0.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>SSSSL</td>
-      <td>25.190001</td>
-      <td>+0.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 4</td>
-      <td>1</td>
-      <td>VET</td>
-      <td>11.550000</td>
-      <td>-1.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 3</td>
-      <td>2</td>
-      <td>AMUB</td>
-      <td>21.813999</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 3</td>
-      <td>2</td>
-      <td>APA</td>
-      <td>31.850000</td>
-      <td>+1.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 3</td>
-      <td>2</td>
-      <td>MACI</td>
-      <td>10.725000</td>
-      <td>+0.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 3</td>
-      <td>2</td>
-      <td>MXC</td>
-      <td>12.810000</td>
-      <td>+2.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>AMPY</td>
-      <td>5.910000</td>
-      <td>+1.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>AMUB</td>
-      <td>21.813499</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>APA</td>
-      <td>31.690001</td>
-      <td>+2.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>ASND</td>
-      <td>242.089996</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>ATNI</td>
-      <td>29.260000</td>
-      <td>-2.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>BP</td>
-      <td>39.470001</td>
-      <td>-0.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>BTE</td>
-      <td>3.860000</td>
-      <td>+3.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>BTSG</td>
-      <td>41.580002</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>BTSGU</td>
-      <td>139.399994</td>
-      <td>+0.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>CET</td>
-      <td>52.849998</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>E</td>
-      <td>47.360001</td>
-      <td>-1.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>NTR</td>
-      <td>75.739998</td>
-      <td>-1.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>OXLCL</td>
-      <td>24.605000</td>
-      <td>-1.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>OXY</td>
-      <td>54.209999</td>
-      <td>-1.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Mar 2</td>
-      <td>3</td>
-      <td>VVX</td>
-      <td>70.970001</td>
-      <td>+1.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>AES</td>
-      <td>17.280001</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>AFB</td>
-      <td>11.120000</td>
-      <td>-2.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>AWP</td>
-      <td>12.560000</td>
-      <td>-3.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>BLTE</td>
-      <td>190.300003</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>BTSG</td>
-      <td>41.430000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>BTSGU</td>
-      <td>138.000000</td>
-      <td>+1.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>CASY</td>
-      <td>685.590027</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>ECPG</td>
-      <td>68.290001</td>
-      <td>+6.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>NMM</td>
-      <td>72.160004</td>
-      <td>-4.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>NMS</td>
-      <td>12.200000</td>
-      <td>-1.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>NTST</td>
-      <td>20.770000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>NXST</td>
-      <td>251.020004</td>
-      <td>+1.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 27</td>
-      <td>6</td>
-      <td>SSL</td>
-      <td>8.920000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>ADEA</td>
-      <td>20.850000</td>
-      <td>+0.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>APA</td>
-      <td>29.100000</td>
-      <td>+11.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>AROC</td>
-      <td>35.430000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>ASTE</td>
-      <td>62.340000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>BCO</td>
-      <td>135.580002</td>
-      <td>-9.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>DHC</td>
-      <td>6.810000</td>
-      <td>+6.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>FCRX</td>
-      <td>25.240000</td>
-      <td>-1.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>MTZ</td>
-      <td>289.959991</td>
-      <td>+1.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 26</td>
-      <td>7</td>
-      <td>SB</td>
-      <td>6.540000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>ADEA</td>
-      <td>20.670000</td>
-      <td>+1.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>ALB</td>
-      <td>195.869995</td>
-      <td>-16.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>AROC</td>
-      <td>35.029999</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>ASTE</td>
-      <td>61.310001</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>BMO</td>
-      <td>148.130005</td>
-      <td>-2.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>CAMT</td>
-      <td>169.029999</td>
-      <td>-2.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>CGO</td>
-      <td>12.740000</td>
-      <td>-7.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>CLDX</td>
-      <td>30.820000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>CSTM</td>
-      <td>25.990000</td>
-      <td>+1.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>GPATU</td>
-      <td>10.870000</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>HZO</td>
-      <td>31.000000</td>
-      <td>-8.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>IIM</td>
-      <td>13.050000</td>
-      <td>-0.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>LGI</td>
-      <td>19.850000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 25</td>
-      <td>8</td>
-      <td>LIVN</td>
-      <td>70.290001</td>
-      <td>-8.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>ADTN</td>
-      <td>10.580000</td>
-      <td>-4.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>AMX</td>
-      <td>25.490000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>ATMU</td>
-      <td>65.110001</td>
-      <td>-5.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>BEP</td>
-      <td>32.099998</td>
-      <td>-5.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>ESLT</td>
-      <td>761.520020</td>
-      <td>+16.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>GPATU</td>
-      <td>10.870000</td>
-      <td>+0.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>MQY</td>
-      <td>11.860000</td>
-      <td>-1.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>NTWO</td>
-      <td>10.520000</td>
-      <td>-0.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>RUSHB</td>
-      <td>66.809998</td>
-      <td>-7.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>SIFY</td>
-      <td>16.379999</td>
-      <td>-11.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>ST</td>
-      <td>38.360001</td>
-      <td>-5.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>TAVI</td>
-      <td>10.520000</td>
-      <td>+0.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 24</td>
-      <td>9</td>
-      <td>TBN</td>
-      <td>31.270000</td>
-      <td>-0.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 23</td>
-      <td>10</td>
-      <td>AXGN</td>
-      <td>35.380001</td>
-      <td>-17.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 23</td>
-      <td>10</td>
-      <td>FBIOP</td>
-      <td>13.525000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 23</td>
-      <td>10</td>
-      <td>SENEB</td>
-      <td>130.000000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 23</td>
-      <td>10</td>
-      <td>SIM</td>
-      <td>32.480000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 23</td>
-      <td>10</td>
-      <td>ZTR</td>
-      <td>7.000000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>ACU</td>
-      <td>44.799999</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>AEF</td>
-      <td>8.660000</td>
-      <td>-9.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>AL</td>
-      <td>64.910004</td>
-      <td>-0.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>DTM</td>
-      <td>136.059998</td>
-      <td>+4.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>IMXI</td>
-      <td>15.690000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>LGI</td>
-      <td>19.299999</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>LIVN</td>
-      <td>68.419998</td>
-      <td>-5.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>RDNW</td>
-      <td>6.960000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 20</td>
-      <td>13</td>
-      <td>RMI</td>
-      <td>15.390000</td>
-      <td>+1.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>ADAMN</td>
-      <td>22.780001</td>
-      <td>+0.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>APA</td>
-      <td>29.080000</td>
-      <td>+11.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>ASRV</td>
-      <td>3.930000</td>
-      <td>-4.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>BMN</td>
-      <td>27.100000</td>
-      <td>+0.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>PWR</td>
-      <td>554.000000</td>
-      <td>-0.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 19</td>
-      <td>14</td>
-      <td>QUAD</td>
-      <td>6.790000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>ADI</td>
-      <td>346.369995</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>AOD</td>
-      <td>10.620000</td>
-      <td>-7.3%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>APA</td>
-      <td>28.610001</td>
-      <td>+13.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>ASC</td>
-      <td>14.610000</td>
-      <td>+10.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>ATMU</td>
-      <td>64.239998</td>
-      <td>-3.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>AWP</td>
-      <td>12.540000</td>
-      <td>-2.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>BMN</td>
-      <td>27.010000</td>
-      <td>+0.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>BOF</td>
-      <td>3.680000</td>
-      <td>-1.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>BWAY</td>
-      <td>26.040001</td>
-      <td>-51.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>CLH</td>
-      <td>276.250000</td>
-      <td>+4.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>CMPS</td>
-      <td>8.450000</td>
-      <td>-19.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>CMU</td>
-      <td>3.610000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>CSTM</td>
-      <td>25.639999</td>
-      <td>+2.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>DHT</td>
-      <td>16.680000</td>
-      <td>+11.2%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>DSX</td>
-      <td>2.460000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>E</td>
-      <td>43.830002</td>
-      <td>+6.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>EDRY</td>
-      <td>16.250000</td>
-      <td>+26.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>ESI</td>
-      <td>33.689999</td>
-      <td>-1.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>FCFS</td>
-      <td>184.110001</td>
-      <td>+1.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>FLNG</td>
-      <td>27.219999</td>
-      <td>+8.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>GLBS</td>
-      <td>2.000000</td>
-      <td>-1.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>GNK</td>
-      <td>23.379999</td>
-      <td>-0.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>HQH</td>
-      <td>20.290001</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>HST</td>
-      <td>20.260000</td>
-      <td>-1.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>HTFC</td>
-      <td>25.080000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>KFFB</td>
-      <td>4.980000</td>
-      <td>-7.8%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>KW</td>
-      <td>10.950000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>KZR</td>
-      <td>6.530000</td>
-      <td>+4.6%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>LIVN</td>
-      <td>67.419998</td>
-      <td>-4.0%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>MAYS</td>
-      <td>45.000000</td>
-      <td>+3.9%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>NBR</td>
-      <td>75.300003</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>NHPAP</td>
-      <td>19.625000</td>
-      <td>-1.4%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>NMM</td>
-      <td>64.540001</td>
-      <td>+6.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>NOK</td>
-      <td>7.430000</td>
-      <td>+5.7%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>OIS</td>
-      <td>9.430000</td>
-      <td>+32.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>OVV</td>
-      <td>49.080002</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>RMI</td>
-      <td>15.360000</td>
-      <td>+1.5%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>RMT</td>
-      <td>12.100000</td>
-      <td>+0.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>SB</td>
-      <td>6.140000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>SSL</td>
-      <td>8.090000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>TNK</td>
-      <td>72.540001</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>TNL</td>
-      <td>75.389999</td>
-      <td>+0.1%</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-    <tr>
-      <td>Feb 18</td>
-      <td>15</td>
-      <td>WTTR</td>
-      <td>14.410000</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-      <td>—</td>
-    </tr>
-  </tbody>
-</table>
+  <section class="hero fade-up">
+    <div>
+      <div class="hero-eyebrow">Performance Ledger</div>
+      <h1 class="hero-title">Every pick.<br/><em>Every result.</em></h1>
+      <p class="hero-sub">Timestamped picks tracked forward in trading days.
+        No cherry-picking — the complete public record, automatically updated.</p>
+      <div class="hero-meta"><span class="pulse"></span>Updated Mar 06, 2026 · 03:00 AM ET</div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#ledger">Browse Ledger</a>
+        <a class="btn btn-outline" href="picks.csv">↓ Download CSV</a>
+        <a class="btn btn-outline" href="../index.html">← Today's Picks</a>
       </div>
     </div>
+    <div class="hero-stats delay-1 fade-up">
+      <div class="stat-card">
+        <div class="stat-label">Total Picks</div>
+        <div class="stat-value">103</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Win Rate</div>
+        <div class="stat-value ">37.9%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg Return</div>
+        <div class="stat-value neg">-1.6%</div>
+      </div>
+    </div>
+  </section>
 
-  </div>
+  <div class="divider"></div>
+
+  <section class="fade-up delay-2">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Average Return by Horizon</div>
+        <div class="section-sub">All tracked picks · Entry at signal-day close</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="chart-wrap">
+        <canvas id="returnChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="ledger" class="fade-up delay-3">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Full Ledger</div>
+        <div class="section-sub">Filter by date · Green = positive return · Red = negative</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="filter-row">
+        <label for="dateFilter">Date:</label>
+        <select id="dateFilter"><option value="">All dates</option></select>
+      </div>
+      <div class="table-wrap">
+      <table id="histTable" class="sg-table" style="width:100%">
+        <thead><tr><th>Date</th><th>Days</th><th>Symbol</th><th>Entry</th><th>Now</th><th>15D</th><th>30D</th><th>60D</th><th>100D</th><th>200D</th></tr></thead>
+        <tbody><tr><td>Mar 5</td><td>1</td><td class="sym-cell">ADEA</td><td>21.0</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">APA</td><td>32.380001068115234</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">BSM</td><td>15.4399995803833</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">BURL</td><td>321.4700012207031</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">BVS</td><td>9.100000381469728</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">FTW</td><td>13.0</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">SENEA</td><td>141.9199981689453</td><td class="ret-now">+0.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 5</td><td>1</td><td class="sym-cell">UAN</td><td>119.80999755859376</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">AGX</td><td>463.3599853515625</td><td class="ret-now ret-neg">-7.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">AMPY</td><td>6.039999961853027</td><td class="ret-now ret-neg">-0.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">ANAB</td><td>60.54999923706055</td><td class="ret-now ret-neg">-5.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">ATNI</td><td>29.920000076293945</td><td class="ret-now ret-neg">-4.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">BTSG</td><td>41.959999084472656</td><td class="ret-now ret-neg">-0.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">BTSGU</td><td>140.49000549316406</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">BUI</td><td>30.6200008392334</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">DAWN</td><td>12.869999885559082</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">KZR</td><td>7.309999942779541</td><td class="ret-now ret-neg">-6.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">OBE</td><td>8.479999542236328</td><td class="ret-now ret-pos">+1.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">OXLCZ</td><td>24.6299991607666</td><td class="ret-now ret-neg">-0.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">SSSSL</td><td>25.190000534057617</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 4</td><td>2</td><td class="sym-cell">VET</td><td>11.550000190734863</td><td class="ret-now ret-neg">-1.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 3</td><td>3</td><td class="sym-cell">AMUB</td><td>21.81399917602539</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 3</td><td>3</td><td class="sym-cell">APA</td><td>31.850000381469727</td><td class="ret-now ret-pos">+1.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 3</td><td>3</td><td class="sym-cell">MACI</td><td>10.725000381469728</td><td class="ret-now ret-pos">+0.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 3</td><td>3</td><td class="sym-cell">MXC</td><td>12.8100004196167</td><td class="ret-now ret-pos">+2.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">AMPY</td><td>5.909999847412109</td><td class="ret-now ret-pos">+1.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">AMUB</td><td>21.8134994506836</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">APA</td><td>31.690000534057617</td><td class="ret-now ret-pos">+2.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">ASND</td><td>242.08999633789065</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">ATNI</td><td>29.26000022888184</td><td class="ret-now ret-neg">-2.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">BP</td><td>39.470001220703125</td><td class="ret-now ret-neg">-0.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">BTE</td><td>3.859999895095825</td><td class="ret-now ret-pos">+3.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">BTSG</td><td>41.58000183105469</td><td class="ret-now ret-pos">+0.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">BTSGU</td><td>139.39999389648438</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">CET</td><td>52.84999847412109</td><td class="ret-now ret-neg">-2.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">E</td><td>47.36000061035156</td><td class="ret-now ret-neg">-1.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">NTR</td><td>75.73999786376953</td><td class="ret-now ret-neg">-1.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">OXLCL</td><td>24.604999542236328</td><td class="ret-now ret-neg">-1.9%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">OXY</td><td>54.209999084472656</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Mar 2</td><td>4</td><td class="sym-cell">VVX</td><td>70.97000122070312</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">AES</td><td>17.280000686645508</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">AFB</td><td>11.119999885559082</td><td class="ret-now ret-neg">-2.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">AWP</td><td>12.5600004196167</td><td class="ret-now ret-neg">-3.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">BLTE</td><td>190.3000030517578</td><td class="ret-now ret-neg">-9.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">BTSG</td><td>41.43000030517578</td><td class="ret-now ret-pos">+0.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">BTSGU</td><td>138.0</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">CASY</td><td>685.5900268554688</td><td class="ret-now ret-neg">-2.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">ECPG</td><td>68.29000091552734</td><td class="ret-now ret-pos">+6.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">NMM</td><td>72.16000366210938</td><td class="ret-now ret-neg">-4.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">NMS</td><td>12.199999809265137</td><td class="ret-now ret-neg">-1.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">NTST</td><td>20.770000457763672</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">NXST</td><td>251.0200042724609</td><td class="ret-now ret-pos">+1.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 27</td><td>7</td><td class="sym-cell">SSL</td><td>8.920000076293945</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">ADEA</td><td>20.850000381469727</td><td class="ret-now ret-pos">+0.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">APA</td><td>29.100000381469727</td><td class="ret-now ret-pos">+11.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">AROC</td><td>35.43000030517578</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">ASTE</td><td>62.34000015258789</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">BCO</td><td>135.5800018310547</td><td class="ret-now ret-neg">-9.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">DHC</td><td>6.809999942779541</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">FCRX</td><td>25.239999771118164</td><td class="ret-now ret-neg">-1.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">MTZ</td><td>289.9599914550781</td><td class="ret-now ret-pos">+1.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 26</td><td>8</td><td class="sym-cell">SB</td><td>6.539999961853027</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">ADEA</td><td>20.670000076293945</td><td class="ret-now ret-pos">+1.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">ALB</td><td>195.8699951171875</td><td class="ret-now ret-neg">-16.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">AROC</td><td>35.029998779296875</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">ASTE</td><td>61.310001373291016</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">BMO</td><td>148.1300048828125</td><td class="ret-now ret-neg">-2.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">CAMT</td><td>169.02999877929688</td><td class="ret-now ret-neg">-2.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">CGO</td><td>12.739999771118164</td><td class="ret-now ret-neg">-7.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">CLDX</td><td>30.81999969482422</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">CSTM</td><td>25.989999771118164</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">GPATU</td><td>10.869999885559082</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">HZO</td><td>31.0</td><td class="ret-now ret-neg">-8.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">IIM</td><td>13.050000190734863</td><td class="ret-now ret-neg">-0.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">LGI</td><td>19.850000381469727</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 25</td><td>9</td><td class="sym-cell">LIVN</td><td>70.29000091552734</td><td class="ret-now ret-neg">-8.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">ADTN</td><td>10.579999923706056</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">AMX</td><td>25.489999771118164</td><td class="ret-now ret-neg">-4.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">ATMU</td><td>65.11000061035156</td><td class="ret-now ret-neg">-5.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">BEP</td><td>32.099998474121094</td><td class="ret-now ret-neg">-5.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">ESLT</td><td>761.52001953125</td><td class="ret-now ret-pos">+16.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">GPATU</td><td>10.869999885559082</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">MQY</td><td>11.859999656677246</td><td class="ret-now ret-neg">-1.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">NTWO</td><td>10.520000457763672</td><td class="ret-now ret-neg">-0.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">RUSHB</td><td>66.80999755859375</td><td class="ret-now ret-neg">-7.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">SIFY</td><td>16.3799991607666</td><td class="ret-now ret-neg">-11.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">ST</td><td>38.36000061035156</td><td class="ret-now ret-neg">-10.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">TAVI</td><td>10.520000457763672</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 24</td><td>10</td><td class="sym-cell">TBN</td><td>31.270000457763672</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 23</td><td>11</td><td class="sym-cell">AXGN</td><td>35.380001068115234</td><td class="ret-now ret-neg">-17.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 23</td><td>11</td><td class="sym-cell">FBIOP</td><td>13.524999618530272</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 23</td><td>11</td><td class="sym-cell">SENEB</td><td>130.0</td><td class="ret-now ret-pos">+7.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 23</td><td>11</td><td class="sym-cell">SIM</td><td>32.47999954223633</td><td class="ret-now ret-neg">-5.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 23</td><td>11</td><td class="sym-cell">ZTR</td><td>7.0</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">ACU</td><td>44.79999923706055</td><td class="ret-now ret-neg">-2.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">AEF</td><td>8.65999984741211</td><td class="ret-now ret-neg">-9.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">AL</td><td>64.91000366210938</td><td class="ret-now ret-neg">-0.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">DTM</td><td>136.05999755859375</td><td class="ret-now ret-pos">+4.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">IMXI</td><td>15.6899995803833</td><td class="ret-now ret-pos">+0.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">LGI</td><td>19.299999237060547</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">LIVN</td><td>68.41999816894531</td><td class="ret-now ret-neg">-5.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">RDNW</td><td>6.960000038146973</td><td class="ret-now ret-neg">-2.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 20</td><td>14</td><td class="sym-cell">RMI</td><td>15.390000343322754</td><td class="ret-now ret-pos">+1.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">ADAMN</td><td>22.780000686645508</td><td class="ret-now ret-pos">+0.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">APA</td><td>29.07999992370605</td><td class="ret-now ret-pos">+11.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">ASRV</td><td>3.930000066757202</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">BMN</td><td>27.100000381469727</td><td class="ret-now ret-pos">+0.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">PWR</td><td>554.0</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 19</td><td>15</td><td class="sym-cell">QUAD</td><td>6.789999961853027</td><td class="ret-now ret-pos">+1.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">ADI</td><td>346.3699951171875</td><td class="ret-now ret-neg">-4.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">AOD</td><td>10.619999885559082</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">APA</td><td>28.61000061035156</td><td class="ret-now ret-pos">+13.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">ASC</td><td>14.609999656677246</td><td class="ret-now ret-pos">+10.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">ATMU</td><td>64.23999786376953</td><td class="ret-now ret-neg">-3.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">AWP</td><td>12.539999961853027</td><td class="ret-now ret-neg">-2.9%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">BMN</td><td>27.01000022888184</td><td class="ret-now ret-pos">+0.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">BOF</td><td>3.680000066757202</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">BWAY</td><td>26.040000915527344</td><td class="ret-now ret-neg">-51.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">CLH</td><td>276.25</td><td class="ret-now ret-pos">+4.9%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">CMPS</td><td>8.449999809265137</td><td class="ret-now ret-neg">-19.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">CMU</td><td>3.609999895095825</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">CSTM</td><td>25.63999938964844</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">DHT</td><td>16.68000030517578</td><td class="ret-now ret-pos">+11.2%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">DSX</td><td>2.4600000381469727</td><td class="ret-now ret-pos">+2.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">E</td><td>43.83000183105469</td><td class="ret-now ret-pos">+6.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">EDRY</td><td>16.25</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">ESI</td><td>33.689998626708984</td><td class="ret-now ret-neg">-1.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">FCFS</td><td>184.1100006103516</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">FLNG</td><td>27.21999931335449</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">GLBS</td><td>2.0</td><td class="ret-now ret-neg">-1.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">GNK</td><td>23.3799991607666</td><td class="ret-now ret-neg">-0.9%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">HQH</td><td>20.290000915527344</td><td class="ret-now ret-neg">-10.3%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">HST</td><td>20.26000022888184</td><td class="ret-now ret-neg">-1.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">HTFC</td><td>25.07999992370605</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">KFFB</td><td>4.980000019073486</td><td class="ret-now ret-neg">-7.8%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">KW</td><td>10.949999809265137</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">KZR</td><td>6.53000020980835</td><td class="ret-now ret-pos">+4.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">LIVN</td><td>67.41999816894531</td><td class="ret-now ret-neg">-4.0%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">MAYS</td><td>45.0</td><td class="ret-now ret-pos">+3.9%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">NBR</td><td>75.30000305175781</td><td class="ret-now ret-pos">+3.6%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">NHPAP</td><td>19.625</td><td class="ret-now ret-neg">-1.4%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">NMM</td><td>64.54000091552734</td><td class="ret-now ret-pos">+6.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">NOK</td><td>7.429999828338623</td><td class="ret-now ret-pos">+5.7%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">OIS</td><td>9.43000030517578</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">OVV</td><td>49.08000183105469</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">RMI</td><td>15.359999656677246</td><td class="ret-now ret-pos">+1.5%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">RMT</td><td>12.100000381469728</td><td class="ret-now ret-pos">+0.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">SB</td><td>6.139999866485596</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">SSL</td><td>8.09000015258789</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">TNK</td><td>72.54000091552734</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">TNL</td><td>75.38999938964844</td><td class="ret-now ret-pos">+0.1%</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>Feb 18</td><td>16</td><td class="sym-cell">WTTR</td><td>14.40999984741211</td><td class="ret-now">—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+    </div>
+  </section>
 
   
-  <script>
-    function isPercentLike(txt){
-      if(!txt) return false;
-      const s = String(txt).trim();
-      if(s === "—") return false;
-      return s.endsWith("%") && !isNaN(Number(s.replace("%","").replace("+","")));
-    }
-  </script>
-    
+  <footer class="footer">
+    <img src="../assets/logo.png" alt="StockGems"/>
+    <p>Updated Mar 06, 2026 · 03:00 AM ET &nbsp;·&nbsp; Stage 2 breakout scanner &nbsp;·&nbsp; Not financial advice</p>
+  </footer>
+</div>
 
-  <script>
-    window.addEventListener("load", function () {
-      try {
-        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("histTable")) {
-          const table = $('#histTable').DataTable({
-            pageLength: 50,
-            order: [[0, 'desc']]
-          });
+<script>
+const chartData = {"labels": ["Now", "15D", "30D", "60D", "100D", "200D"], "avgs": [-1.58, null, null, null, null, null]};
 
-          // Dropdown from unique Scan Date (column 0)
-          const dateIdx = 0;
-          const seen = new Set();
-          table.column(dateIdx).data().each(function (d) {
-            if (d) seen.add(String(d).trim());
-          });
-          const dates = Array.from(seen).sort().reverse();
-          const sel = document.getElementById("dateFilter");
-          dates.forEach(function (d) {
-            const opt = document.createElement("option");
-            opt.value = d;
-            opt.textContent = d;
-            sel.appendChild(opt);
-          });
-          sel.addEventListener("change", function () {
-            const v = this.value;
-            if (!v) table.column(dateIdx).search("").draw();
-            else table.column(dateIdx).search("^" + v + "$", true, false).draw();
-          });
+window.addEventListener("load", function () {
 
-          // Color ONLY the "Now" column
-          function colorizeNowOnly() {
-            let nowIdx = null;
-            $("#histTable thead th").each(function (i) {
-              const t = $(this).text().trim().toLowerCase();
-              if (t === "now") nowIdx = i;
-            });
-            if (nowIdx === null) return;
-
-            $("#histTable tbody tr").each(function () {
-              const tds = $(this).find("td");
-              const cell = $(tds[nowIdx]);
-              if (!cell || cell.length === 0) return;
-
-              const txt = cell.text().trim();
-              cell.css("font-weight", "800");
-
-              if (!txt || txt === "—") {
-                cell.css("color", "var(--muted)");
-                return;
-              }
-
-              const n = Number(txt.replace("%", "").replace("+", ""));
-              if (!Number.isFinite(n)) return;
-
-              if (n > 0) cell.css("color", "var(--pos)");
-              else if (n < 0) cell.css("color", "var(--neg)");
-              else cell.css("color", "var(--muted)");
-            });
+  // Chart
+  if (chartData && window.Chart) {
+    const ctx = document.getElementById("returnChart");
+    if (ctx) {
+      const colors = chartData.avgs.map(v =>
+        v === null ? '#e5e7eb' : v >= 0 ? 'rgba(22,128,60,.72)' : 'rgba(185,28,28,.68)'
+      );
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartData.labels,
+          datasets: [{ label: 'Avg Return %', data: chartData.avgs, backgroundColor: colors, borderRadius: 7, borderSkipped: false }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: c => c.raw === null ? 'No data' : (c.raw >= 0 ? '+' : '') + c.raw.toFixed(1) + '%' } }
+          },
+          scales: {
+            y: {
+              grid: { color: 'rgba(27,43,94,.06)' },
+              ticks: { callback: v => (v >= 0 ? '+' : '') + v + '%', font: { size: 12 }, color: '#9ca3af' }
+            },
+            x: { grid: { display: false }, ticks: { font: { size: 12, weight: '600' }, color: '#6b7280' } }
           }
-
-          colorizeNowOnly();
-          table.on("draw", function () { colorizeNowOnly(); });
         }
-      } catch (e) {
-        console.warn("History init failed.", e);
-      }
+      });
+    }
+  }
+
+  // DataTable
+  if (window.jQuery && $.fn.DataTable && document.getElementById("histTable")) {
+    const table = $('#histTable').DataTable({ pageLength: 50, order: [[0, 'desc']] });
+    const seen = new Set();
+    table.column(0).data().each(d => { if (d) seen.add(String(d).trim()); });
+    Array.from(seen).sort().reverse().forEach(d => {
+      const o = document.createElement("option");
+      o.value = d; o.textContent = d;
+      document.getElementById("dateFilter").appendChild(o);
     });
-  </script>
+    document.getElementById("dateFilter").addEventListener("change", function () {
+      const v = this.value;
+      table.column(0).search(v ? "^" + v + "$" : "", v ? true : false, false).draw();
+    });
+  }
+
+});
+</script>
 </body>
 </html>

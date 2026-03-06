@@ -1,434 +1,403 @@
 <!doctype html>
-<html>
-<head>
+<html lang="en">
+<head><title>StockGems · Stage 2 Scanner</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>StockGem</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
   <style>
-    :root{
-      --bg0:#f8fafc;
-      --bg1:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --border: rgba(15,23,42,.08);
-      --shadow: 0 18px 60px rgba(2,6,23,.10);
-      --shadow2: 0 8px 24px rgba(2,6,23,.08);
-      --radius: 22px;
-      --accent: #2563eb;
-      --accent2:#7c3aed;
-      --pos:#16a34a;
-      --neg:#dc2626;
+    :root {
+      --navy:    #1b2b5e;
+      --green:   #2d5a3d;
+      --green2:  #3a7050;
+      --bg:      #f9f8f6;
+      --surface: #ffffff;
+      --border:  rgba(27,43,94,.10);
+      --border2: rgba(27,43,94,.06);
+      --text:    #111827;
+      --muted:   #6b7280;
+      --muted2:  #9ca3af;
+      --pos:     #16803c;
+      --neg:     #b91c1c;
+      --pos-bg:  rgba(22,128,60,.08);
+      --neg-bg:  rgba(185,28,28,.07);
+      --radius:  16px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:    0 4px 16px rgba(27,43,94,.10);
+      --shadow-lg: 0 12px 40px rgba(27,43,94,.14);
     }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(1200px 600px at 15% 0%, rgba(37,99,235,.12), transparent 55%),
-        radial-gradient(900px 500px at 85% 10%, rgba(124,58,237,.12), transparent 55%),
-        linear-gradient(to bottom, var(--bg0), var(--bg0));
-    }
-
-    .container{
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 28px 18px 60px;
-    }
-
-    .nav{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.72);
-      backdrop-filter: blur(12px);
-      border-radius: 999px;
-      box-shadow: var(--shadow2);
-      position: sticky;
-      top: 14px;
-      z-index: 50;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:700;
-      letter-spacing:-0.02em;
-    }
-
-    .dot{
-      width:10px;height:10px;border-radius:99px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 0 0 6px rgba(37,99,235,.10);
-    }
-
-    .hero-seal{
-      display:block;
-      margin: 0 auto 14px auto;
-      width: min(320px, 70%);
-      height: auto;
-      opacity: 0.92;
-      filter: drop-shadow(0 10px 28px rgba(2,6,23,.18));
-    }
-
-    .nav a{
-      color: var(--muted);
-      text-decoration:none;
-      font-weight:600;
-      margin-left: 14px;
-      transition: 200ms ease;
-    }
-    .nav a:hover{ color: var(--text); }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.75);
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
       color: var(--text);
-      font-weight:700;
-      text-decoration:none;
-      box-shadow: var(--shadow2);
-      transition: 220ms ease;
-    }
-    .btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow); }
-    .btn.primary{
-      border: none;
-      color: white;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
 
-    .hero{
-      margin-top: 22px;
-      padding: 42px 28px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.80);
+    /* Layout */
+    .page-wrap { max-width: 1200px; margin: 0 auto; padding: 0 20px 80px; }
+
+    /* Nav */
+    .nav-outer {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(249,248,246,.92);
       backdrop-filter: blur(14px);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      position:relative;
+      border-bottom: 1px solid var(--border);
     }
-    .hero h1{
-      margin:0 0 10px 0;
-      font-size: clamp(32px, 4vw, 46px);
-      line-height: 1.05;
-      letter-spacing: -0.03em;
+    .nav {
+      max-width: 1200px; margin: 0 auto; padding: 0 20px;
+      height: 60px; display: flex; align-items: center;
+      justify-content: space-between; gap: 16px;
     }
-    .hero p{
-      margin:0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.6;
-      max-width: 70ch;
+    .nav-logo img { height: 30px; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a {
+      text-decoration: none; color: var(--muted); font-size: 14px;
+      font-weight: 500; padding: 6px 12px; border-radius: 8px;
+      transition: background 150ms, color 150ms;
     }
-
-    .meta{
-      margin-top: 14px;
-      color: var(--muted);
-      font-weight:600;
-      font-size: 13px;
+    .nav-links a:hover { background: rgba(27,43,94,.07); color: var(--navy); }
+    .nav-links a.active { color: var(--navy); font-weight: 600; }
+    .nav-cta {
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--navy), var(--green));
+      color: #fff; font-size: 13px; font-weight: 600;
+      padding: 8px 18px; border-radius: 999px; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(27,43,94,.25);
+      transition: opacity 150ms, transform 150ms;
     }
-
-    .chips{
-      margin-top: 18px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .chip{
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.70);
-      color: var(--muted);
-      font-weight:700;
-      font-size: 12px;
+    .nav-cta:hover { opacity: .88; transform: translateY(-1px); }
+    .nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 4px; }
+    .nav-toggle span { display: block; width: 22px; height: 2px; background: var(--text); margin: 5px 0; border-radius: 2px; }
+    @media (max-width: 680px) {
+      .nav-links {
+        display: none; position: absolute; top: 60px; left: 0; right: 0;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        flex-direction: column; align-items: flex-start;
+        padding: 12px 20px 16px; gap: 2px;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { width: 100%; }
+      .nav-toggle { display: block; }
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-      margin-top: 16px;
+    /* Hero */
+    .hero {
+      margin-top: 48px;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 40px; align-items: start;
     }
-    .card{
-      grid-column: span 12;
-      padding: 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow2);
+    @media (max-width: 700px) { .hero { grid-template-columns: 1fr; } }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--green2); margin-bottom: 12px;
     }
-    @media (min-width: 900px){
-      .card.half{ grid-column: span 6; }
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(36px, 5vw, 56px); font-weight: 800;
+      line-height: 1.07; letter-spacing: -.02em; color: var(--navy);
     }
-
-    .card-title{
-      font-weight:800;
-      letter-spacing:-0.02em;
-      margin:0 0 8px 0;
+    .hero-title em { font-style: italic; color: var(--green); }
+    .hero-sub { margin-top: 16px; font-size: 16px; color: var(--muted); max-width: 48ch; line-height: 1.65; }
+    .hero-meta { margin-top: 18px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted2); }
+    .pulse {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--pos);
+      box-shadow: 0 0 0 0 rgba(22,128,60,.5); animation: pulse 2s infinite;
     }
-    .card-sub{
-      margin:0 0 12px 0;
-      color: var(--muted);
-      font-weight:600;
-      font-size: 13px;
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(22,128,60,.5); }
+      70%  { box-shadow: 0 0 0 7px rgba(22,128,60,0); }
+      100% { box-shadow: 0 0 0 0 rgba(22,128,60,0); }
     }
-
-    /* DataTables restyle */
-    table.table{
-      width:100%;
-      border-collapse: separate !important;
-      border-spacing: 0;
-      overflow:hidden;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: white;
-    }
-    table.table thead th{
-      background: rgba(248,250c,252,.9) !important;
-      color: var(--muted) !important;
-      font-weight:800 !important;
-      border-bottom: 1px solid var(--border) !important;
-      padding: 12px 12px !important;
-    }
-    #todayTable tbody td{
-      padding: 12px 12px !important;
-      border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text) !important;
-      font-weight:600;
-    }
-    #histTable tbody td{
-      padding: 12px 12px !important;
-      border-bottom: 1px solid rgba(15,23,42,.06) !important;
-      color: var(--text);
-      font-weight:600;
-    }
-    table.table tbody tr:hover td{
-      background: rgba(37,99,235,.06) !important;
-      transition: 180ms ease;
+    .hero-actions { margin-top: 26px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+    .chip {
+      font-size: 12px; font-weight: 600; color: var(--navy);
+      background: rgba(27,43,94,.06); border: 1px solid rgba(27,43,94,.10);
+      padding: 5px 12px; border-radius: 999px;
     }
 
+    /* Stat sidebar */
+    .hero-stats { display: flex; flex-direction: column; gap: 10px; min-width: 190px; }
+    @media (max-width: 700px) { .hero-stats { flex-direction: row; flex-wrap: wrap; } }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 14px 18px; box-shadow: var(--shadow-sm);
+    }
+    .stat-label { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted2); margin-bottom: 4px; }
+    .stat-value { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: var(--navy); }
+    .stat-value.pos { color: var(--pos); }
+    .stat-value.neg { color: var(--neg); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+      font-size: 14px; font-weight: 600; padding: 10px 20px; border-radius: 999px;
+      transition: all 150ms; border: none; cursor: pointer;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--navy), var(--green));
+      color: #fff; box-shadow: 0 3px 12px rgba(27,43,94,.25);
+    }
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-outline {
+      background: var(--surface); color: var(--navy);
+      border: 1.5px solid var(--border); box-shadow: var(--shadow-sm);
+    }
+    .btn-outline:hover { background: rgba(27,43,94,.04); border-color: rgba(27,43,94,.22); }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+    /* Section */
+    .section-header { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .section-title { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; color: var(--navy); letter-spacing: -.01em; }
+    .section-sub { font-size: 13px; color: var(--muted); }
+
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .card-body { padding: 24px; }
+    .card-header { padding: 18px 24px 16px; border-bottom: 1px solid var(--border2); }
+    .card-header h2 { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; color: var(--navy); }
+    .card-header p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* Explainer */
+    .explainer-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (max-width: 520px) { .explainer-grid { grid-template-columns: 1fr; } }
+    .explainer-item { padding: 14px 16px; background: rgba(27,43,94,.03); border: 1px solid var(--border2); border-radius: var(--radius-sm); }
+    .explainer-item strong { display: block; font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
+    .explainer-item span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.sg-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    table.sg-table thead th {
+      background: rgba(27,43,94,.04); color: var(--muted);
+      font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+      padding: 10px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; text-align: left;
+    }
+    table.sg-table tbody td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border2);
+      color: var(--text); font-weight: 500; white-space: nowrap;
+    }
+    table.sg-table tbody tr:last-child td { border-bottom: none; }
+    table.sg-table tbody tr:hover td { background: rgba(27,43,94,.025); }
+    .sym-cell { font-weight: 700; color: var(--navy); font-size: 14px; letter-spacing: .02em; }
+    td.ret-pos { color: var(--pos); font-weight: 600; background: var(--pos-bg); }
+    td.ret-neg { color: var(--neg); font-weight: 600; background: var(--neg-bg); }
+    td.ret-now { font-weight: 700 !important; }
+
+    /* DataTables overrides */
     .dataTables_wrapper .dataTables_filter input,
-    .dataTables_wrapper .dataTables_length select{
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 8px 10px;
-      background: white;
-      outline: none;
+    .dataTables_wrapper .dataTables_length select {
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 10px; background: var(--surface); color: var(--text); outline: none;
     }
-    .dataTables_wrapper .dataTables_filter label,
-    .dataTables_wrapper .dataTables_length label,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length,
     .dataTables_wrapper .dataTables_info,
-    .dataTables_wrapper .dataTables_paginate{
-      color: var(--muted) !important;
-      font-weight:600;
+    .dataTables_wrapper .dataTables_paginate {
+      color: var(--muted) !important; font-weight: 500; font-size: 13px; padding: 10px 0;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { border-radius: 6px !important; border: none !important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: linear-gradient(135deg, var(--navy), var(--green)) !important;
+      color: #fff !important; border: none !important;
     }
 
-    .toolbar{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin: 10px 0 16px 0;
-    }
-    .toolbar select{
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 8px 10px;
-      background: white;
-      outline:none;
-      font-weight:700;
-      color: var(--text);
+    /* Chart */
+    .chart-wrap { position: relative; height: 240px; padding: 20px 24px; }
+
+    /* Filter row */
+    .filter-row { display: flex; align-items: center; gap: 10px; padding: 14px 24px 0; flex-wrap: wrap; }
+    .filter-row label { font-size: 13px; font-weight: 600; color: var(--muted); }
+    .filter-row select {
+      font-size: 13px; font-weight: 600; border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px; background: var(--surface); color: var(--navy); outline: none; cursor: pointer;
     }
 
-    .empty-state{
-      padding: 22px;
-      border: 1px dashed rgba(15,23,42,.18);
-      border-radius: 16px;
-      background: rgba(248,250,252,.8);
+    /* Empty */
+    .empty { padding: 56px 24px; text-align: center; }
+    .empty-icon { font-size: 38px; margin-bottom: 12px; }
+    .empty-title { font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 700; color: var(--navy); }
+    .empty-sub { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
     }
-    .empty-title{ font-weight:900; letter-spacing:-0.02em; margin-bottom: 4px; }
-    .empty-sub{ color: var(--muted); font-weight:600; }
+    .footer img { height: 22px; opacity: .45; }
+    .footer p { font-size: 12px; color: var(--muted2); }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up   { animation: fadeUp .45s ease both; }
+    .delay-1   { animation-delay: .08s; }
+    .delay-2   { animation-delay: .16s; }
+    .delay-3   { animation-delay: .24s; }
+    .delay-4   { animation-delay: .32s; }
   </style>
-    
 </head>
 <body>
-  <div class="container">
 
+  <nav class="nav-outer">
     <div class="nav">
-      <div class="brand"><span class="dot"></span>StockGem</div>
-      <div>
-        <a href="index.html">Today</a>
+      <a class="nav-logo" href="index.html">
+        <img src="assets/logo.png" alt="StockGems"/>
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Today</a>
         <a href="history/index.html">Performance</a>
         <a href="history/2025/">2025 Results</a>
-        <a href="stage2_candidates.csv">Download</a>
+        <a href="stage2_candidates.csv">CSV</a>
       </div>
-      <a class="btn primary" href="history/index.html">View ledger</a>
+      <a class="nav-cta" href="history/index.html">View Ledger →</a>
+      <button class="nav-toggle" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
+  </nav>
+<div class="page-wrap">
 
-    <div class="hero">
-      <img src="assets/logo.png" alt="StockGems" class="hero-seal">
-      <h1>Proof, not promises.</h1>
-      <p>
-        A beautiful, public performance ledger that tracks breakout picks forward in trading days.
-        Every scan is timestamped. Every result updates automatically.
-      </p>
-      <div class="meta">Last updated: <b>Mar 05, 2026 · 11:58 PM ET</b></div>
-
+  <section class="hero fade-up">
+    <div>
+      <div class="hero-eyebrow">Stage 2 Breakout Scanner</div>
+      <h1 class="hero-title">Proof,<br/><em>not promises.</em></h1>
+      <p class="hero-sub">Every pick is timestamped and tracked forward in trading days.
+        A fully public performance ledger — updated automatically after each close.</p>
+      <div class="hero-meta"><span class="pulse"></span>Updated Mar 06, 2026 · 03:00 AM ET</div>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#picks">Today's Picks</a>
+        <a class="btn btn-outline" href="history/index.html">Performance Ledger</a>
+        <a class="btn btn-outline" href="stage2_candidates.csv">↓ CSV</a>
+      </div>
       <div class="chips">
-        <div class="chip">After-close updates</div>
-        <div class="chip">Full historical ledger</div>
-        <div class="chip">Forward returns</div>
-        <div class="chip">Downloadable CSV</div>
+        <span class="chip">After-close updates</span>
+        <span class="chip">Forward returns tracked</span>
+        <span class="chip">Full history ledger</span>
+        <span class="chip">Open data</span>
       </div>
+    </div>
+    <div class="hero-stats delay-1 fade-up">
+      <div class="stat-card">
+        <div class="stat-label">Picks Today</div>
+        <div class="stat-value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Scan Type</div>
+        <div class="stat-value" style="font-size:16px;">Stage 2</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Horizons</div>
+        <div class="stat-value" style="font-size:15px;">15–200D</div>
+      </div>
+    </div>
+  </section>
 
-      <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="btn primary" href="#today">View today’s picks</a>
-        <a class="btn" href="history/index.html">See performance ledger</a>
+  <div class="divider"></div>
+
+  <section id="picks" class="fade-up delay-2">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Today's Picks</div>
+        <div class="section-sub">Sorted by distance from pivot — tightest setups first</div>
+      </div>
+    </div>
+    <div class="card"><div class="empty">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">No picks today</div>
+          <div class="empty-sub">No breakouts met the criteria. Check back after next market close.</div>
+        </div></div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="two-col fade-up delay-3">
+    <div class="card">
+      <div class="card-header">
+        <h2>What you're seeing</h2>
+        <p>Column definitions for today's scan output</p>
+      </div>
+      <div class="card-body">
+        <div class="explainer-grid">
+          <div class="explainer-item">
+            <strong>From Pivot</strong>
+            <span>% above the handle-derived pivot. Closer to 0% = tighter, lower-risk entry.</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Ext vs 50D</strong>
+            <span>% above the 50-day moving average. Filters out over-extended breakouts (&gt;25% fails).</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Volume</strong>
+            <span>Today's volume. Must be ≥ 1.4× the 50D average to qualify as a breakout.</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Avg Vol (50D)</strong>
+            <span>Rolling 50-day volume baseline used for the volume expansion check.</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="grid" id="today">
-      <div class="card">
-        <div class="card-title">Today’s picks</div>
-        <div class="card-sub">
-          Curated list for today. Clean metrics only. Full proof lives in the ledger.
-        </div>
-        <table id="todayTable" class="table" border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th>Symbol</th>
-      <th>Close</th>
-      <th>Volume</th>
-      <th>Avg Vol (50D)</th>
-      <th>Ext vs 50D</th>
-      <th>From Pivot</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>ADEA</td>
-      <td>21.00</td>
-      <td>1.33M</td>
-      <td>762.70K</td>
-      <td>12.21%</td>
-      <td>0.72%</td>
-    </tr>
-    <tr>
-      <td>BURL</td>
-      <td>321.47</td>
-      <td>2.28M</td>
-      <td>804.06K</td>
-      <td>6.41%</td>
-      <td>0.94%</td>
-    </tr>
-    <tr>
-      <td>UAN</td>
-      <td>119.81</td>
-      <td>106.10K</td>
-      <td>42.82K</td>
-      <td>12.71%</td>
-      <td>1.05%</td>
-    </tr>
-    <tr>
-      <td>BSM</td>
-      <td>15.44</td>
-      <td>802.56K</td>
-      <td>394.31K</td>
-      <td>6.60%</td>
-      <td>1.25%</td>
-    </tr>
-    <tr>
-      <td>SENEA</td>
-      <td>141.92</td>
-      <td>83.50K</td>
-      <td>57.11K</td>
-      <td>17.58%</td>
-      <td>1.33%</td>
-    </tr>
-    <tr>
-      <td>APA</td>
-      <td>32.38</td>
-      <td>9.63M</td>
-      <td>6.54M</td>
-      <td>20.98%</td>
-      <td>1.66%</td>
-    </tr>
-    <tr>
-      <td>BVS</td>
-      <td>9.10</td>
-      <td>925.90K</td>
-      <td>275.67K</td>
-      <td>12.67%</td>
-      <td>2.71%</td>
-    </tr>
-    <tr>
-      <td>FTW</td>
-      <td>13.00</td>
-      <td>148.30K</td>
-      <td>70.49K</td>
-      <td>21.26%</td>
-      <td>4.84%</td>
-    </tr>
-  </tbody>
-</table>
+    <div class="card">
+      <div class="card-header">
+        <h2>The methodology</h2>
+        <p>Minervini-style Stage 2 base + breakout detection</p>
       </div>
-
-      <div class="card half">
-        <div class="card-title">What you’re seeing</div>
-        <div class="card-sub">
-          This page is not a screener. It’s a presentation layer for tracked picks.
+      <div class="card-body">
+        <div class="explainer-grid">
+          <div class="explainer-item">
+            <strong>Trend context</strong>
+            <span>50 SMA &gt; 150 SMA &gt; 200 SMA, rising 200, price above 50 &amp; 150.</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Base quality</strong>
+            <span>40-day base ≤ 30% depth. Volatility and volume contract into the right side.</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Pivot</strong>
+            <span>Max HIGH of the final 10 days of the base defines the handle pivot point.</span>
+          </div>
+          <div class="explainer-item">
+            <strong>Breakout day</strong>
+            <span>Close &gt; pivot on volume ≥ 1.4× 50D. Not extended &gt; 25% above 50 SMA.</span>
+          </div>
         </div>
-        <div style="color:var(--muted); font-weight:600; line-height:1.7;">
-          <b>From Pivot</b> = percent above the prior 65D high (closer is tighter).<br/>
-          <b>Ext vs 50D</b> = percent above the 50-day average (filters “too extended”).<br/>
-          <b>Volume</b> = today’s volume, formatted (K/M/B).<br/>
-          <b>Avg Vol (50D)</b> = typical volume baseline.
-        </div>
-      </div>
-
-      <div class="card half">
-        <div class="card-title">Want the proof?</div>
-        <div class="card-sub">The ledger shows Now + 15D/30D/60D/100D/200D forward returns.</div>
-        <a class="btn primary" href="history/index.html">Open performance ledger</a>
-        <div style="height:10px;"></div>
-        <a class="btn" href="history/picks.csv">Download picks.csv</a>
       </div>
     </div>
+  </section>
 
-  </div>
+  
+  <footer class="footer">
+    <img src="assets/logo.png" alt="StockGems"/>
+    <p>Updated Mar 06, 2026 · 03:00 AM ET &nbsp;·&nbsp; Stage 2 breakout scanner &nbsp;·&nbsp; Not financial advice</p>
+  </footer>
+</div>
 
-  <script>
-    window.addEventListener("load", function () {
-      try {
-        if (window.jQuery && $.fn && $.fn.DataTable && document.getElementById("todayTable")) {
-          $('#todayTable').DataTable({
-            pageLength: 25,
-            order: []
-          });
-        }
-      } catch (e) {
-        console.warn("Today init failed.", e);
-      }
-    });
-  </script>
+<script>
+  window.addEventListener("load", function () {
+    if (window.jQuery && $.fn.DataTable && document.getElementById("todayTable")) {
+      $('#todayTable').DataTable({ pageLength: 25, order: [] });
+    }
+  });
+</script>
 </body>
 </html>
